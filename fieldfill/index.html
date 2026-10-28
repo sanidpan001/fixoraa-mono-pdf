@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldFill — Fill PDF Forms Online Free: Complete & Save Fillable PDFs</title>
+<meta name="description" content="Free PDF form filler. Open any fillable PDF, complete its fields in your browser — text, checkboxes, dropdowns and radio groups — then save the filled copy, optionally flattened.">
+<link rel="canonical" href="https://pdf.fixoraa.tech/fieldfill/">
+<meta property="og:title" content="FieldFill — Fill PDF Forms Online Free: Complete & Save Fillable PDFs">
+<meta property="og:description" content="Free PDF form filler. Open any fillable PDF, complete its fields in your browser — text, checkboxes, dropdowns and radio groups — then save the filled copy, optionally flattened.">
+<meta property="og:url" content="https://pdf.fixoraa.tech/fieldfill/">
+<meta property="og:type" content="website">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';</script>
+<style>
+:root{--pri:#15803D;--acc:#A855F7;--bgc:#F0FDF4}
+body{background:var(--bgc);font-family:'Segoe UI',system-ui,sans-serif}
+.pri{background:var(--pri)} .prit{color:var(--pri)}
+.btn{background:var(--pri);color:#fff;padding:.6rem 1.2rem;border-radius:.6rem;font-weight:600;cursor:pointer;border:none}
+.btn:hover{opacity:.9} .btn2{background:var(--acc);color:#111;padding:.6rem 1.2rem;border-radius:.6rem;font-weight:600;cursor:pointer;border:none}
+.btn:disabled,.btn2:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{border:1.5px solid #cbd5e1;border-radius:.55rem;padding:.55rem .7rem;width:100%;background:#fff;color:#0f172a}
+input[type=file]{padding:.45rem .6rem} input[type=range]{padding:0} input[type=checkbox],input[type=radio]{width:auto}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--pri);border-color:transparent}
+label{font-size:.83rem;font-weight:600;display:block;margin-bottom:.3rem}
+.card{background:#fff;border-radius:1rem;box-shadow:0 8px 30px rgba(15,23,42,.08);padding:1.4rem}
+article p{margin:.7rem 0;line-height:1.75;color:#334155}
+article h2{font-size:1.45rem;font-weight:800;margin:1.6rem 0 .4rem;color:#0f172a}
+.faq{background:#fff;border-radius:.7rem;padding:.9rem 1.1rem;margin:.55rem 0;box-shadow:0 2px 10px rgba(15,23,42,.05)}
+.faq summary{font-weight:700;cursor:pointer}
+table.dt{width:100%;border-collapse:collapse} table.dt th,table.dt td{border:1px solid #e2e8f0;padding:.45rem .6rem;text-align:left;font-size:.9rem}
+table.dt th{background:#f1f5f9}
+.drop{border:2px dashed #94a3b8;border-radius:.8rem;padding:1.1rem;text-align:center;background:#f8fafc}
+canvas.prev{max-width:100%;border:1px solid #e2e8f0;border-radius:.5rem;background:#fff}
+
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "FieldFill", "url": "https://pdf.fixoraa.tech/fieldfill/", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free PDF form filler. Open any fillable PDF, complete its fields in your browser \u2014 text, checkboxes, dropdowns and radio groups \u2014 then save the filled copy, optionally flattened."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I know if my PDF is fillable?", "acceptedAnswer": {"@type": "Answer", "text": "Press Read Form Fields \u2014 FieldFill will list every field it finds. If it reports none, the document is a flat PDF that merely looks like a form; a signature tool or your viewer's annotation mode are the alternatives."}}, {"@type": "Question", "name": "What field types are supported?", "acceptedAnswer": {"@type": "Answer", "text": "Text fields, checkboxes, dropdowns and radio groups \u2014 the types real-world forms use. Each appears with its true field name and type so you can match it to the printed form."}}, {"@type": "Question", "name": "What does flattening do?", "acceptedAnswer": {"@type": "Answer", "text": "It bakes your answers into the page content and removes the fields, so the filled copy cannot be edited \u2014 ideal for submissions. Keep an unflattened master if you may need corrections."}}, {"@type": "Question", "name": "Will my answers show in other PDF viewers?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. FieldFill writes proper field appearances, so answers display and print correctly in standard viewers, and the data remains machine-readable when unflattened \u2014 exactly what issuers' systems expect."}}, {"@type": "Question", "name": "My field names look like code. Which is which?", "acceptedAnswer": {"@type": "Answer", "text": "Issuers name fields for their systems. Fields are listed in the document's internal order, which usually matches the visual order on the page \u2014 compare the list with the form's layout to map cryptic names."}}, {"@type": "Question", "name": "Are my form answers uploaded anywhere?", "acceptedAnswer": {"@type": "Answer", "text": "Never. Reading fields, entering answers and saving all happen in your browser. Forms hold your most personal data \u2014 this tool is built so none of it leaves your device."}}]}</script>
+</head>
+<body id="top">
+<header class="sticky top-0 z-40 shadow-md" style="background:#052E16">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 py-3 flex items-center justify-between">
+    <a href="#top" class="text-xl font-extrabold tracking-tight" style="color:#F0FDF4">📝 FieldFill</a>
+    <nav class="flex gap-5 text-sm font-semibold" style="color:#F0FDF4">
+      <a href="#top" class="hover:underline">Home</a>
+      <a href="https://fixoraa.tech" class="hover:underline">More Tools</a>
+    </nav>
+  </div>
+</header>
+<div class="no-print mx-auto max-w-6xl px-4 sm:px-6 pt-4" role="complementary" aria-label="Advertisement">
+  <div class="mx-auto text-center" style="max-width:728px">
+    <span class="block text-[10px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">Advertisement</span>
+    <div class="flex justify-center overflow-hidden">
+      <div class="origin-top scale-[0.44] sm:scale-100 shrink-0">
+        <script>
+          atOptions = { 'key' : '4e68ac77881c17fe128a46565d9a4e8c', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };
+        </script>
+        <script src="https://www.highrevenueformat.com/4e68ac77881c17fe128a46565d9a4e8c/invoke.js"></script>
+      </div>
+    </div>
+  </div>
+</div>
+<main class="mx-auto max-w-6xl px-4 sm:px-6 py-8">
+  <div class="text-center mb-6">
+    <h1 class="text-3xl sm:text-4xl font-extrabold" style="color:#0f172a">Fill PDF Forms Online — No Printing Needed</h1>
+    <p class="mt-2 text-slate-600 max-w-2xl mx-auto">The form is already fillable — it just never told you. FieldFill reads every form field hidden in your PDF, presents them as a clean web form, and writes your answers back into a saved copy you can send on.</p>
+    <span class="inline-block mt-3 px-3 py-1 rounded-full text-xs font-bold text-white pri">✓ Unlimited Free Usage — No Signup, No Watermark</span>
+    <p class="mt-2 text-xs text-slate-500">🔒 100% private: your file is processed entirely in your browser and never uploaded to any server.</p>
+  </div>
+  <div class="grid md:grid-cols-5 gap-6">
+  <div class="card md:col-span-2 space-y-3">
+    <div class="drop"><label>Your fillable PDF form</label><input id="file" type="file" accept="application/pdf"></div>
+    <button class="btn w-full" id="go" onclick="loadForm()">Read Form Fields</button>
+    <div><label><input type="checkbox" id="flat"> Flatten on save (lock answers into the page)</label></div>
+    <button class="btn2 w-full" id="save" style="display:none" onclick="saveForm()">💾 Save Filled PDF</button>
+    <button class="btn2 w-full" id="dl" style="display:none">⬇ Download filled PDF</button>
+    <p id="status" class="text-sm font-semibold"></p>
+  </div>
+  <div class="card md:col-span-3">
+    <h3 class="font-bold mb-2">Form fields</h3>
+    <div id="fields" class="space-y-3 text-sm text-slate-600">Choose a PDF and press Read Form Fields — every field in the document will appear here with its type, ready to complete. Application forms, tax helpers, HR paperwork and official PDFs with real fields all work.</div>
+  </div></div>
+</main>
+<div class="no-print mx-auto max-w-6xl px-4 sm:px-6 pb-4" role="complementary" aria-label="Advertisement">
+  <div class="mx-auto text-center" style="max-width:300px">
+    <span class="block text-[10px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">Advertisement</span>
+    <div class="flex justify-center overflow-hidden">
+      <script>
+(function(grnp){
+var d = document,
+    s = d.createElement('script'),
+    l = d.currentScript || d.scripts[d.scripts.length - 1];
+s.settings = grnp || {};
+s.src = "\/\/peacefulbicycle.com\/bnXtVJsnd.GElF0oYVWQcY\/Qe\/mf9qu-ZqUtlZk\/PzTHcx1LM\/jWIZwkMTj\/U\/t-NrzmUnyOMsj\/AzydO\/Qx";
+s.async = true;
+s.referrerPolicy = 'no-referrer-when-downgrade';
+l.parentNode.insertBefore(s, l);
+})({})
+</script>
+    </div>
+  </div>
+</div>
+<section class="mx-auto max-w-4xl px-4 sm:px-6 pb-6">
+  <article>
+  <h2>The fillable form hiding inside your PDF</h2>
+<p>Many official PDFs are not flat documents at all — they are true forms, carrying named fields for text, checkboxes, dropdowns and radio choices, built by the issuing organisation for exactly one purpose: to be completed digitally. Yet most people meet them through a viewer that buries the fields, or print them and take up a pen, because nobody pointed at the machinery inside. The giveaway is a document with suspiciously neat blank boxes and lines: very often, each is a field waiting for data.</p>
+<p>FieldFill opens that machinery. It reads the form dictionary of your PDF, lists every field with its name and type, and presents them as an ordinary web form — the interface everyone already knows how to complete. You type your answers once, the tool writes them back into the PDF's fields with proper appearances, and the saved copy opens in any viewer showing your data in place, printable and submittable. The pen, the printer and the scanner stay out of it.</p>
+<h2>Field types, handled honestly</h2>
+<p>Text fields take your typing as-is — names, addresses, figures, dates in whatever format the form's labels request. Checkboxes honour their nature: ticked or not, saved decisively. Dropdowns present the form's own allowed options, so you select exactly the value the issuer expects rather than free-typing a near-miss that a processing system might reject. Radio groups, where precisely one option may be chosen, are rendered as a single select for the same reason — the PDF's rules, enforced by the interface.</p>
+<p>Field names deserve a word, because they are not always friendly. Issuers name fields for their systems — 'Text1', 'applicant_dob', 'form1[0].#subform[0].Line4[0]' — and FieldFill shows the true names beside friendly type labels. When a name is cryptic, the order of fields follows the document's internal order, which usually tracks the visual order of the form; a quick glance between the field list and the PDF's pages maps them. Renaming fields is the issuer's privilege; understanding them is a minute's work.</p>
+<h2>Fill first, flatten last — the two-save strategy</h2>
+<p>FieldFill offers flattening as a choice, and the choice deserves a strategy. Save unflattened and the filled copy remains a living form: answers can be corrected, a reviewer can adjust a field, the document continues its workflow. Save flattened and every answer is baked into the page content — the fields cease to exist, nothing can be edited or accidentally altered, and the file is exactly as final as a signed printout. Submissions, filings and anything sent outside your control should travel flattened.</p>
+<p>The professional habit is both: keep an unflattened master with your answers editable, send the flattened copy into the world. If the recipient reports an error, correct the master and re-flatten, rather than re-typing a form from scratch. FieldFill makes the second save a ten-second job since your answers are still in the form — flattening is a save option, not a new round of data entry.</p>
+<h2>How to fill a PDF form, step by step</h2>
+<p>Load the PDF and press Read Form Fields. If the document contains fields, they appear as a clean list — take a moment to scan the names so cryptic ones can be matched to the printed form. Complete each field carefully; dropdowns and radio groups offer only the issuer's options, so use them as guidance about what the form wants. Checkboxes are decisive — a deliberately unticked box is an answer too, and the tool saves unticked boxes faithfully as unticked.</p>
+<p>Decide on flattening per the strategy above, press Save Filled PDF, and download the result. Open it once in your usual viewer and scroll: your answers should sit in their boxes, aligned and legible. That verification matters most for long official forms, where one misaligned answer can mean a rejected submission. If anything looks off, your answers remain in FieldFill's list — adjust and save again; the original PDF is untouched throughout.</p>
+<h2>The forms of everyday life</h2>
+<p>Tax helpers and government applications are the emblematic fillable PDFs, joined by HR onboarding packs, insurance claims, bank account forms, visa paperwork, rental applications and supplier registrations. Organisations issue them as forms because their systems harvest the field data automatically — a flattened, correctly-filled submission processes fast, while a photographed handwriting page goes to a manual queue. Filling digitally is not merely convenient for you; it is how the receiving machinery prefers to be fed.</p>
+<p>There is a record-keeping dividend too. A saved library of your filled forms — applications as submitted, claims as filed — is a personal archive of exactly what you told each organisation and when. When a dispute begins with 'our records show…', the person holding the filled copy, with field-perfect data, starts from evidence rather than memory.</p>
+<h2>Privacy: forms contain everything — keep them home</h2>
+<p>A completed form is a biography in boxes: name, address, birth date, account numbers, employer, income. Of all documents, these least deserve a trip through a stranger's upload server. FieldFill works entirely inside your browser tab: the field reading, your typing and the saving all happen on your device, and nothing — not the form, not your answers — is transmitted or stored anywhere. Close the tab and the tool retains nothing.</p>
+<p>That architecture also removes the anxious economics of form tools online — per-form fees, accounts that 'store your documents for convenience', download gates after you have typed everything. Here the work and the data stay where they always belonged: with the person the form is about.</p>
+<h2>Completing official forms without rejections</h2>
+<p>Match the form's own conventions before inventing your own: dates in the order the field labels show, names exactly as they appear on your identity documents, amounts without creative rounding. Use dropdown values verbatim — processing systems match strings, not intentions. Complete the form in one sitting where possible; half-filled forms saved across days are where inconsistent answers breed. After saving, reopen the filled copy and read it as the receiving officer will — top to bottom, checking that every answer sits in its intended box, because field order and visual order occasionally disagree in badly-built forms. Keep the flattened submission and the editable master together, named as a pair; when the authority writes back quoting your own form, you will answer from the identical document they hold.</p>
+  <h2>Frequently Asked Questions</h2>
+  <details class="faq"><summary>How do I know if my PDF is fillable?</summary><p>Press Read Form Fields — FieldFill will list every field it finds. If it reports none, the document is a flat PDF that merely looks like a form; a signature tool or your viewer's annotation mode are the alternatives.</p></details>
+<details class="faq"><summary>What field types are supported?</summary><p>Text fields, checkboxes, dropdowns and radio groups — the types real-world forms use. Each appears with its true field name and type so you can match it to the printed form.</p></details>
+<details class="faq"><summary>What does flattening do?</summary><p>It bakes your answers into the page content and removes the fields, so the filled copy cannot be edited — ideal for submissions. Keep an unflattened master if you may need corrections.</p></details>
+<details class="faq"><summary>Will my answers show in other PDF viewers?</summary><p>Yes. FieldFill writes proper field appearances, so answers display and print correctly in standard viewers, and the data remains machine-readable when unflattened — exactly what issuers' systems expect.</p></details>
+<details class="faq"><summary>My field names look like code. Which is which?</summary><p>Issuers name fields for their systems. Fields are listed in the document's internal order, which usually matches the visual order on the page — compare the list with the form's layout to map cryptic names.</p></details>
+<details class="faq"><summary>Are my form answers uploaded anywhere?</summary><p>Never. Reading fields, entering answers and saving all happen in your browser. Forms hold your most personal data — this tool is built so none of it leaves your device.</p></details>
+  </article>
+</section>
+<footer class="mt-6 py-8" style="background:#052E16;color:#F0FDF4">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 text-center text-sm">
+    <p class="font-bold text-base">FieldFill</p>
+    <p class="opacity-80 mt-1">Free PDF form filler. Open any fillable PDF, complete its fields in your browser — text, checkboxes, dropdowns and radio groups — then save the filled copy, optionally flattened.</p>
+    <p class="mt-2"><a href="#top" class="underline">Home</a> · <a href="https://fixoraa.tech" class="underline">More Tools</a></p>
+    <p class="fx-credit" style="text-align:center;font-size:12.5px;opacity:.62;margin:10px auto 2px;letter-spacing:.01em">Made by <a href="https://fixoraa.tech" target="_blank" rel="noopener" style="color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px">Fixoraa</a></p>
+  </div>
+</footer>
+<script>
+
+const $=id=>document.getElementById(id);
+function fmtBytes(b){if(b===0)return '0 B';const k=1024,s=['B','KB','MB','GB'];const i=Math.floor(Math.log(b)/Math.log(k));return (b/Math.pow(k,i)).toFixed(i?1:0)+' '+s[i];}
+function setStatus(m,ok){const el=$('status');if(!el)return;el.textContent=m;el.style.color=ok===false?'#dc2626':'inherit';}
+function download(bytes,name,type){const blob=bytes instanceof Blob?bytes:new Blob([bytes],{type:type||'application/pdf'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},800);}
+async function readFile(input){const f=input.files&&input.files[0];if(!f)throw new Error('Please choose a PDF file first.');return {file:f,buf:await f.arrayBuffer()};}
+function showDl(id,bytes,name){const b=$(id);b.style.display='inline-block';b.onclick=()=>download(bytes,name);}
+
+
+let srcBufF=null, fieldMeta=[];
+async function loadForm(){
+  try{
+    const {buf}=await readFile($('file')); srcBufF=buf;
+    const doc=await PDFLib.PDFDocument.load(buf.slice(0));
+    const form=doc.getForm(); const fields=form.getFields(); fieldMeta=[];
+    if(!fields.length){ $('fields').innerHTML='This PDF contains no fillable form fields. Some "forms" are really flat documents drawn to look like forms — for those, print-to-sign tools (InkSeal) or your PDF viewer\'s text tool are the honest alternatives.'; setStatus('No form fields found in this PDF.'); return; }
+    $('fields').innerHTML=fields.map((f,ix)=>{
+      const name=f.getName(); const ctor=f.constructor.name; let input='';
+      if(ctor==='PDFTextField'){ input='<input id="ff'+ix+'" type="text" value="'+(f.getText()||'').replace(/"/g,'&quot;')+'">'; fieldMeta.push({name,kind:'text'}); }
+      else if(ctor==='PDFCheckBox'){ input='<input id="ff'+ix+'" type="checkbox" '+(f.isChecked()?'checked':'')+'> Tick = checked'; fieldMeta.push({name,kind:'check'}); }
+      else if(ctor==='PDFDropdown'){ const opts=f.getOptions(); input='<select id="ff'+ix+'">'+opts.map(o=>'<option>'+o+'</option>').join('')+'</select>'; fieldMeta.push({name,kind:'drop'}); }
+      else if(ctor==='PDFRadioGroup'){ const opts=f.getOptions(); input='<select id="ff'+ix+'"><option value="">(none)</option>'+opts.map(o=>'<option>'+o+'</option>').join('')+'</select>'; fieldMeta.push({name,kind:'radio'}); }
+      else { input='<input id="ff'+ix+'" type="text" placeholder="(unsupported field type — leave blank)">'; fieldMeta.push({name,kind:'other'}); }
+      return '<div><label>'+name.replace(/</g,'&lt;')+' <span class="text-slate-400">('+ctor.replace('PDF','')+')</span></label>'+input+'</div>';
+    }).join('');
+    $('save').style.display='inline-block';
+    setStatus('Found '+fields.length+' field(s). Complete them, then Save.');
+  }catch(e){ setStatus('⚠ '+(e.message||e),false); }
+}
+async function saveForm(){
+  try{
+    const doc=await PDFLib.PDFDocument.load(srcBufF.slice(0));
+    const form=doc.getForm();
+    fieldMeta.forEach((m,ix)=>{
+      const el=$('ff'+ix); if(!el) return;
+      try{
+        if(m.kind==='text'&&el.value) form.getTextField(m.name).setText(el.value);
+        if(m.kind==='check'){ const cb=form.getCheckBox(m.name); el.checked?cb.check():cb.uncheck(); }
+        if(m.kind==='drop'&&el.value) form.getDropdown(m.name).select(el.value);
+        if(m.kind==='radio'&&el.value) form.getRadioGroup(m.name).select(el.value);
+      }catch(e){}
+    });
+    form.updateFieldAppearances();
+    if($('flat').checked) form.flatten();
+    const bytes=await doc.save();
+    showDl('dl',bytes,'filled-form.pdf');
+    setStatus('Done ✔ Filled copy ready'+($('flat').checked?' — fields flattened and locked into the pages.':' — fields remain editable in the saved copy if you need another pass.'));
+  }catch(e){ setStatus('⚠ '+(e.message||e),false); }
+}
+
+</script>
+</body>
+</html>
