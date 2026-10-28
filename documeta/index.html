@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="canonical" href="https://pdf.fixoraa.tech/documeta/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocuMeta — Free PDF Info &amp; Metadata Editor Online</title>
+<meta name="description" content="DocuMeta is a free PDF info and metadata editor. Inspect page count, page sizes and existing metadata, then edit the title, author, subject and keywords of any PDF — right in your browser, no upload.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { steel: {50:'#F2F7FB',100:'#E3EDF5',200:'#C3D9EA',300:'#94BCD8',400:'#5E97BE',500:'#3E7CB1',600:'#2F6690',700:'#285374',800:'#23465F',900:'#1E3A4F',950:'#122636'} },
+  fontFamily: { sans: ['Manrope','ui-sans-serif','system-ui','sans-serif'], mono: ['"JetBrains Mono"','ui-monospace','monospace'] }
+}}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<style>
+  html{scroll-behavior:smooth}
+  body{font-family:'Manrope',ui-sans-serif,system-ui,sans-serif}
+  .drop-active{border-color:#2F6690!important;background:#E3EDF5!important}
+  .row-line{border-bottom:1px dashed #C3D9EA}
+  input,textarea{transition:border-color .15s, box-shadow .15s}
+  input:focus,textarea:focus{outline:none;border-color:#2F6690!important;box-shadow:0 0 0 3px rgba(62,124,177,.22)}
+  details summary::-webkit-details-marker{display:none}
+  .faq-arrow{transition:transform .2s}
+  details[open ] .faq-arrow{transform:rotate(180deg)}
+  @media print{.no-print{display:none!important}}
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type":"Question","name":"What PDF metadata can DocuMeta show and edit?","acceptedAnswer":{"@type":"Answer","text":"DocuMeta shows the document title, author, subject, keywords, creator, producer, creation date and modification date stored inside a PDF, plus file facts such as page count, page sizes, file size and PDF version. You can edit the title, author, subject and keywords and download an updated copy with the new values written in."}},
+    {"@type":"Question","name":"Is my PDF uploaded to a server when I use DocuMeta?","acceptedAnswer":{"@type":"Answer","text":"No. DocuMeta runs entirely in your browser using the pdf-lib library. Your file is read from your device, inspected and edited on your device, and the updated copy is generated locally. Nothing is uploaded, stored or tracked, which makes it safe for contracts, invoices and other private documents."}},
+    {"@type":"Question","name":"Why does my PDF show a different title in the viewer tab?","acceptedAnswer":{"@type":"Answer","text":"Most PDF viewers display the metadata title in the tab or title bar when one is set, and fall back to the file name when it is not. If your document opens with an outdated or unhelpful tab title, the metadata title is usually the reason. Edit it in DocuMeta, download the updated copy, and viewers will show the new title instead."}},
+    {"@type":"Question","name":"Will editing metadata change the content or quality of my PDF?","acceptedAnswer":{"@type":"Answer","text":"No. Metadata lives in a separate information dictionary inside the PDF file. Changing the title, author, subject or keywords does not re-render pages, recompress images or alter text, so the visible content and visual quality of your document stay exactly the same."}},
+    {"@type":"Question","name":"Can DocuMeta edit a password-protected PDF?","acceptedAnswer":{"@type":"Answer","text":"DocuMeta cannot open PDFs that require a password to view, because the file contents are encrypted. If you have the password, open the file in a desktop PDF application, remove the open password or print it to a new PDF, and then edit the metadata of that copy in DocuMeta."}},
+    {"@type":"Question","name":"How do page sizes in the inspector help me?","acceptedAnswer":{"@type":"Answer","text":"The inspector lists every page with its exact dimensions in points, inches and millimetres, its orientation, and whether it matches a standard size such as A4 or Letter. That helps you catch mixed-size documents before printing, confirm a file meets a submission specification, and spot pages that were scanned or exported at the wrong size."}}
+  ]
+}
+</script>
+</head>
+<body id="top" class="bg-white text-slate-800 antialiased">
+
+<!-- HEADER -->
+<header class="no-print sticky top-0 z-40 bg-steel-950/95 backdrop-blur border-b border-steel-800">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+    <a href="#top" class="flex items-center gap-2.5 min-w-0">
+      <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-steel-500 text-white shrink-0" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+      </span>
+      <span class="text-white font-extrabold text-xl tracking-tight truncate">Docu<span class="text-steel-300">Meta</span></span>
+    </a>
+    <nav class="flex items-center gap-1 sm:gap-2 text-sm font-semibold shrink-0">
+      <a href="#top" class="text-steel-100 hover:text-white px-3 py-2 rounded-md hover:bg-steel-800">Home</a>
+      <a href="https://fixoraa.tech" class="text-steel-100 hover:text-white px-3 py-2 rounded-md hover:bg-steel-800">More Tools</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="bg-gradient-to-b from-steel-50 to-white border-b border-steel-100">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 pt-10 pb-8 text-center">
+    <span class="inline-flex items-center gap-1.5 bg-steel-600 text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z"/></svg>
+      Unlimited Free Usage
+    </span>
+    <h1 class="mt-4 text-3xl sm:text-5xl font-extrabold text-steel-950 tracking-tight">PDF Info &amp; Metadata Editor</h1>
+    <p class="mt-3 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">Drop in a PDF to inspect its page count, every page size and the metadata hidden inside — then fix the title, author, subject and keywords and download a clean, updated copy. Everything happens in your browser; your file never leaves your device.</p>
+  </div>
+</section>
+
+<!-- TOP AD -->
+<div class="no-print mx-auto max-w-6xl px-4 sm:px-6 pt-4" role="complementary" aria-label="Advertisement">
+  <div class="mx-auto text-center" style="max-width:728px">
+    <span class="block text-[10px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">Advertisement</span>
+    <div class="flex justify-center overflow-hidden">
+      <div class="origin-top scale-[0.44] sm:scale-100 shrink-0">
+        <script>
+          atOptions = { 'key' : '4e68ac77881c17fe128a46565d9a4e8c', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };
+        </script>
+        <script src="https://www.highrevenueformat.com/4e68ac77881c17fe128a46565d9a4e8c/invoke.js"></script>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOL -->
+<main class="mx-auto max-w-6xl px-4 sm:px-6 py-8">
+  <div class="grid lg:grid-cols-5 gap-6 items-start">
+
+    <!-- INSPECTOR PANEL -->
+    <section class="lg:col-span-3 bg-white border-2 border-steel-200 rounded-2xl overflow-hidden shadow-sm" aria-label="PDF inspector">
+      <div class="bg-steel-900 px-5 py-3.5 flex items-center justify-between gap-3">
+        <h2 class="text-white font-bold text-sm tracking-wide flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          INSPECTOR
+        </h2>
+        <span id="inspectStatus" class="font-mono text-[11px] text-steel-300">no file loaded</span>
+      </div>
+
+      <!-- Dropzone -->
+      <div id="dropzone" class="m-5 border-2 border-dashed border-steel-300 rounded-xl bg-steel-50 px-5 py-8 text-center cursor-pointer hover:bg-steel-100 transition-colors" role="button" tabindex="0" aria-label="Choose or drop a PDF file">
+        <svg class="mx-auto text-steel-500" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <p class="mt-3 font-bold text-steel-900">Drop a PDF here, or click to browse</p>
+        <p class="mt-1 text-sm text-slate-500">The file is read locally on your device — it is never uploaded.</p>
+        <input id="fileInput" type="file" accept="application/pdf,.pdf" class="hidden">
+      </div>
+
+      <p id="toolError" class="hidden mx-5 mb-4 bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg px-4 py-3" role="alert"></p>
+      <p id="toolNotice" class="hidden mx-5 mb-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-lg px-4 py-3" role="status"></p>
+
+      <!-- File facts -->
+      <div id="factsWrap" class="hidden px-5 pb-2">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-steel-600 mb-2">File facts</h3>
+        <dl class="font-mono text-[13px]">
+          <div class="row-line flex justify-between gap-4 py-2"><dt class="text-slate-500">File name</dt><dd id="factName" class="text-right text-steel-950 break-all">—</dd></div>
+          <div class="row-line flex justify-between gap-4 py-2"><dt class="text-slate-500">File size</dt><dd id="factSize" class="text-right text-steel-950">—</dd></div>
+          <div class="row-line flex justify-between gap-4 py-2"><dt class="text-slate-500">PDF version</dt><dd id="factVersion" class="text-right text-steel-950">—</dd></div>
+          <div class="row-line flex justify-between gap-4 py-2"><dt class="text-slate-500">Pages</dt><dd id="factPages" class="text-right text-steel-950">—</dd></div>
+          <div class="row-line flex justify-between gap-4 py-2"><dt class="text-slate-500">Page sizes</dt><dd id="factUniform" class="text-right text-steel-950">—</dd></div>
+          <div class="row-line flex justify-between gap-4 py-2"><dt class="text-slate-500">Creator</dt><dd id="factCreator" class="text-right text-steel-950 break-all">—</dd></div>
+          <div class="row-line flex justify-between gap-4 py-2"><dt class="text-slate-500">Producer</dt><dd id="factProducer" class="text-right text-steel-950 break-all">—</dd></div>
+          <div class="flex justify-between gap-4 py-2"><dt class="text-slate-500">Created / Modified</dt><dd id="factDates" class="text-right text-steel-950">—</dd></div>
+        </dl>
+      </div>
+
+      <!-- Existing metadata readout -->
+      <div id="currentWrap" class="hidden px-5 py-4">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-steel-600 mb-2">Stored metadata (as found)</h3>
+        <dl class="font-mono text-[13px] bg-steel-50 border border-steel-100 rounded-xl px-4 py-2">
+          <div class="row-line flex justify-between gap-4 py-2"><dt class="text-slate-500 shrink-0">Title</dt><dd id="curTitle" class="text-right text-steel-950 break-all">—</dd></div>
+          <div class="row-line flex justify-between gap-4 py-2"><dt class="text-slate-500 shrink-0">Author</dt><dd id="curAuthor" class="text-right text-steel-950 break-all">—</dd></div>
+          <div class="row-line flex justify-between gap-4 py-2"><dt class="text-slate-500 shrink-0">Subject</dt><dd id="curSubject" class="text-right text-steel-950 break-all">—</dd></div>
+          <div class="flex justify-between gap-4 py-2"><dt class="text-slate-500 shrink-0">Keywords</dt><dd id="curKeywords" class="text-right text-steel-950 break-all">—</dd></div>
+        </dl>
+      </div>
+
+      <!-- Page table -->
+      <div id="pagesWrap" class="hidden px-5 pb-6">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-steel-600 mb-2">Pages</h3>
+        <div class="overflow-x-auto border border-steel-100 rounded-xl">
+          <table class="w-full text-sm min-w-[430px]">
+            <thead>
+              <tr class="bg-steel-900 text-white text-left text-xs uppercase tracking-wide">
+                <th class="px-3 py-2.5 font-semibold">#</th>
+                <th class="px-3 py-2.5 font-semibold">Size</th>
+                <th class="px-3 py-2.5 font-semibold">Standard</th>
+                <th class="px-3 py-2.5 font-semibold">Orientation</th>
+                <th class="px-3 py-2.5 font-semibold">Rotation</th>
+              </tr>
+            </thead>
+            <tbody id="pageRows" class="font-mono text-[12.5px]"></tbody>
+          </table>
+        </div>
+        <button id="copyReportBtn" type="button" class="mt-4 w-full sm:w-auto bg-white border-2 border-steel-600 text-steel-700 hover:bg-steel-50 font-bold text-sm px-5 py-2.5 rounded-lg">Copy inspection report</button>
+      </div>
+
+      <div id="emptyState" class="px-5 pb-6 text-center text-sm text-slate-400">Load a PDF to see its facts, stored metadata and a page-by-page size breakdown here.</div>
+    </section>
+
+    <!-- EDITOR PANEL -->
+    <section class="lg:col-span-2 bg-steel-950 rounded-2xl overflow-hidden shadow-sm lg:sticky lg:top-24" aria-label="Metadata editor">
+      <div class="px-5 py-3.5 border-b border-steel-800 flex items-center justify-between gap-3">
+        <h2 class="text-white font-bold text-sm tracking-wide flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          EDIT METADATA
+        </h2>
+        <span id="changeBadge" class="hidden font-mono text-[11px] bg-amber-400 text-amber-950 font-semibold px-2 py-0.5 rounded-full">0 changed</span>
+      </div>
+      <form id="metaForm" class="px-5 py-5 space-y-4" novalidate>
+        <div>
+          <label for="fTitle" class="block text-xs font-bold uppercase tracking-widest text-steel-300 mb-1.5">Title</label>
+          <input id="fTitle" type="text" disabled placeholder="e.g. Annual Report 2026" class="w-full bg-steel-900 border border-steel-700 text-white placeholder-steel-500 rounded-lg px-3.5 py-2.5 text-sm disabled:opacity-50">
+          <p class="mt-1 text-[11px] text-steel-400">Shown in viewer tabs and search results. Leave empty to clear.</p>
+        </div>
+        <div>
+          <label for="fAuthor" class="block text-xs font-bold uppercase tracking-widest text-steel-300 mb-1.5">Author</label>
+          <input id="fAuthor" type="text" disabled placeholder="e.g. Priya Sharma" class="w-full bg-steel-900 border border-steel-700 text-white placeholder-steel-500 rounded-lg px-3.5 py-2.5 text-sm disabled:opacity-50">
+        </div>
+        <div>
+          <label for="fSubject" class="block text-xs font-bold uppercase tracking-widest text-steel-300 mb-1.5">Subject</label>
+          <textarea id="fSubject" rows="3" disabled placeholder="A one-line summary of what this document covers" class="w-full bg-steel-900 border border-steel-700 text-white placeholder-steel-500 rounded-lg px-3.5 py-2.5 text-sm disabled:opacity-50 resize-y"></textarea>
+        </div>
+        <div>
+          <label for="fKeywords" class="block text-xs font-bold uppercase tracking-widest text-steel-300 mb-1.5">Keywords</label>
+          <input id="fKeywords" type="text" disabled placeholder="invoice, tax, 2026" class="w-full bg-steel-900 border border-steel-700 text-white placeholder-steel-500 rounded-lg px-3.5 py-2.5 text-sm disabled:opacity-50">
+          <p class="mt-1 text-[11px] text-steel-400">Separate with commas. Duplicates are removed automatically.</p>
+        </div>
+        <div class="flex flex-wrap gap-2 pt-1">
+          <button id="downloadBtn" type="submit" disabled class="flex-1 min-w-[150px] bg-steel-500 hover:bg-steel-400 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm px-5 py-3 rounded-lg">Download updated PDF</button>
+          <button id="clearBtn" type="button" disabled class="bg-steel-800 hover:bg-steel-700 disabled:opacity-40 text-steel-100 font-bold text-sm px-4 py-3 rounded-lg">Clear all</button>
+          <button id="resetBtn" type="button" disabled class="bg-steel-800 hover:bg-steel-700 disabled:opacity-40 text-steel-100 font-bold text-sm px-4 py-3 rounded-lg">Reset</button>
+        </div>
+        <p class="text-[11px] leading-relaxed text-steel-400">Downloading writes your edits into a new copy — the original file on your device is never touched. The modification date is refreshed automatically; page content is not re-rendered or recompressed.</p>
+      </form>
+    </section>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section class="mt-10 grid sm:grid-cols-3 gap-4">
+    <div class="border border-steel-100 bg-steel-50 rounded-2xl p-5">
+      <p class="font-mono text-steel-500 text-sm font-semibold">STEP 01</p>
+      <h3 class="font-bold text-steel-950 mt-1">Load &amp; inspect</h3>
+      <p class="text-sm text-slate-600 mt-1">Add any PDF and DocuMeta reads its information dictionary, page boxes and file header on the spot.</p>
+    </div>
+    <div class="border border-steel-100 bg-steel-50 rounded-2xl p-5">
+      <p class="font-mono text-steel-500 text-sm font-semibold">STEP 02</p>
+      <h3 class="font-bold text-steel-950 mt-1">Edit the four fields</h3>
+      <p class="text-sm text-slate-600 mt-1">Update the title, author, subject and keywords — or clear fields that leak old names, clients or software details.</p>
+    </div>
+    <div class="border border-steel-100 bg-steel-50 rounded-2xl p-5">
+      <p class="font-mono text-steel-500 text-sm font-semibold">STEP 03</p>
+      <h3 class="font-bold text-steel-950 mt-1">Download the copy</h3>
+      <p class="text-sm text-slate-600 mt-1">Save the updated PDF with the new metadata embedded and a fresh modification date. Your original stays untouched.</p>
+    </div>
+  </section>
+</main>
+
+<!-- BOTTOM AD -->
+<div class="no-print mx-auto max-w-6xl px-4 sm:px-6 pb-4" role="complementary" aria-label="Advertisement">
+  <div class="mx-auto text-center" style="max-width:300px">
+    <span class="block text-[10px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">Advertisement</span>
+    <div class="flex justify-center overflow-hidden">
+      <script>
+(function(grnp){
+var d = document,
+    s = d.createElement('script'),
+    l = d.currentScript || d.scripts[d.scripts.length - 1];
+s.settings = grnp || {};
+s.src = "\/\/peacefulbicycle.com\/bnXtVJsnd.GElF0oYVWQcY\/Qe\/mf9qu-ZqUtlZk\/PzTHcx1LM\/jWIZwkMTj\/U\/t-NrzmUnyOMsj\/AzydO\/Qx";
+s.async = true;
+s.referrerPolicy = 'no-referrer-when-downgrade';
+l.parentNode.insertBefore(s, l);
+})({})
+</script>
+    </div>
+  </div>
+</div>
+
+<!-- ARTICLE -->
+<article class="mx-auto max-w-4xl px-4 sm:px-6 py-10" id="guide">
+  <h2 class="text-2xl sm:text-3xl font-extrabold text-steel-950 tracking-tight">PDF Metadata Explained: What It Is, Why It Matters, and How to Fix It</h2>
+  <p class="mt-4 text-slate-600 leading-relaxed">Every PDF file carries two documents in one. The first is the one you see: pages, text, images and layout. The second is invisible but just as real — a small set of descriptive fields stored inside the file called metadata. The metadata records the document's title, its author, a subject summary, a list of keywords, the software that created it, the software that produced the final file, and the dates it was created and last modified. DocuMeta exists to make that hidden second document visible and editable, so the files you share describe themselves correctly wherever they end up.</p>
+  <p class="mt-4 text-slate-600 leading-relaxed">Most people first meet PDF metadata by accident. You open a file and the viewer tab shows a strange string such as "Microsoft Word - final_v3_REAL.docx" instead of the document's actual name. A client forwards your proposal and the properties panel credits someone who left the company two years ago. A recruiter opens your résumé and the title bar reads "Document1". In each case the visible pages are fine; it is the metadata that is wrong, stale or embarrassing. Because metadata travels with the file through email, downloads and archives, those small errors follow your documents far beyond your own screen.</p>
+
+  <h3 class="mt-8 text-xl font-bold text-steel-950">The four fields you can — and should — control</h3>
+  <p class="mt-3 text-slate-600 leading-relaxed">Of all the fields stored in a PDF, four are written for readers rather than machines, and they are the four DocuMeta lets you edit. The <strong>title</strong> is the single most influential field. PDF viewers show it in the window title and tab when it is set, document management systems use it in listings, and search engines use it as the headline when an indexed PDF appears in results. A title that matches the document's real subject makes the file findable and trustworthy; a leftover working title undermines both. The <strong>author</strong> field names the person or organisation responsible for the content. It appears in properties panels, library catalogues and accessibility tools, and it is the field most likely to leak an outdated name — a former employee, a freelancer, or the colleague whose template everyone copies. The <strong>subject</strong> is a short summary, ideally one sentence, describing what the document covers. It rewards a moment's thought: "Q3 invoices for the Northwind account, April–June 2026" helps a future reader far more than "Invoice". Finally, <strong>keywords</strong> are a comma-separated list of terms that document stores, intranets and operating-system search use to group and retrieve files. A handful of specific keywords — a project code, a client name, a document type, a year — quietly pays off every time someone searches an archive months later.</p>
+  <p class="mt-4 text-slate-600 leading-relaxed">The remaining fields are factual records rather than things you write. The <strong>creator</strong> is the application that originally authored the content, such as a word processor or design tool, while the <strong>producer</strong> is the library or driver that generated the final PDF bytes. The <strong>creation</strong> and <strong>modification</strong> dates log when the file was first produced and when it last changed. DocuMeta displays these read-only values in the inspector because they are genuinely useful — they help you verify which of two similar files is newer, or confirm that a file really came from the system that supposedly sent it — but editing them would rewrite history rather than describe the document, so the editor refreshes only the modification date when you save an updated copy.</p>
+
+  <h3 class="mt-8 text-xl font-bold text-steel-950">Page information: the other half of the inspection</h3>
+  <p class="mt-3 text-slate-600 leading-relaxed">Metadata is only part of what DocuMeta inspects. The page table lists every page with its exact dimensions in points, inches and millimetres, its orientation, its rotation, and whether it matches a standard size such as A4, A5, Letter, Legal or A3. This sounds like a detail for print shops, but it answers everyday questions surprisingly often. Why did this contract print with odd margins? Because three of its pages are Letter in an otherwise A4 document. Why does the uploaded form look stretched? Because the scanned pages are a non-standard size produced by a phone scanner app. Does this file meet the submission specification that demands A4 throughout? The inspector's summary line tells you at a glance whether all pages share one size or whether the document mixes sizes — and if it mixes them, exactly which pages are the odd ones out. Checking page geometry before you send, print or upload a file takes seconds and prevents the slow, confusing failures that happen when a mismatch is discovered at the other end.</p>
+  <p class="mt-4 text-slate-600 leading-relaxed">The file facts panel completes the picture with the PDF version read from the file header, the exact file size, and the page count. Version matters more than it used to: a file saved as PDF 1.7 behaves predictably almost everywhere, while very old or unusual versions occasionally trip up strict validators used by courts, universities and government portals. Knowing the version, size and page count up front lets you answer the three questions every recipient asks — can I open it, can I download it, and how long is it — before they have to ask.</p>
+
+  <h3 class="mt-8 text-xl font-bold text-steel-950">Why clean metadata is a privacy habit, not just tidiness</h3>
+  <p class="mt-3 text-slate-600 leading-relaxed">There is a defensive reason to inspect metadata before sharing a file. Author fields routinely contain full names of people who drafted a document, including people who were never meant to be associated with the final version. Titles can preserve internal codenames, unreleased product names or blunt working labels ("layoff-plan-draft") that were never intended for outside eyes. Creator and producer strings reveal the software stack an organisation uses, which is information security teams prefer not to broadcast. None of this is visible on the printed page, which is precisely why it gets overlooked. Building a ten-second metadata check into your routine before sending contracts, reports, portfolios or applications is one of the cheapest privacy habits available: open the file in DocuMeta, read what the inspector shows, and clear or correct anything that should not travel with the document.</p>
+  <p class="mt-4 text-slate-600 leading-relaxed">The same check protects you in the other direction. When you receive an important PDF — a certificate, an agreement, a tax document — its metadata offers quick authenticity clues. A creation date that matches the claimed timeline, a producer string consistent with the sender's known tools, and an author that matches the signing organisation all support the file's story. Metadata can be forged, so it never proves authenticity on its own, but inconsistencies are a useful early warning that a document deserves a second look.</p>
+
+  <h3 class="mt-8 text-xl font-bold text-steel-950">How DocuMeta edits without uploading</h3>
+  <p class="mt-3 text-slate-600 leading-relaxed">Traditional metadata editors ask you to upload your document to a server, wait while it is processed, and download the result — which means a copy of your file sat on someone else's machine. DocuMeta takes the opposite approach. It uses the pdf-lib JavaScript library, loaded once into your browser, to read and rewrite the PDF entirely on your device. When you drop a file into the inspector, your browser reads its bytes directly from your disk or download folder. When you click download, the updated file is assembled in memory and saved straight back to your device. No copy is transmitted, stored or logged anywhere, so the tool is safe to use with contracts, financial statements, medical letters and other documents you would never paste into an unfamiliar website. As a side benefit, everything is fast: there is no upload queue, no file-size tier and no waiting room, even on a slow connection.</p>
+  <p class="mt-4 text-slate-600 leading-relaxed">Just as importantly, editing metadata with pdf-lib is a surgical change. The library updates the document's information dictionary and writes the file back out without re-rendering pages, recompressing images or touching the text layer. Your document looks exactly as it did, prints exactly as it did, and keeps its fonts embedded and its links intact. The only differences are the four fields you edited and a refreshed modification date — which is exactly what a metadata edit should be.</p>
+
+  <h3 class="mt-8 text-xl font-bold text-steel-950">A practical workflow for documents you publish</h3>
+  <p class="mt-3 text-slate-600 leading-relaxed">If you publish PDFs — reports, ebooks, white papers, price lists, manuals — treat metadata as part of the document, not an afterthought. Write the title as you would write a headline: specific, descriptive and free of file-name habits like underscores and version tags. Credit the author as the person or brand you want associated with the work publicly, because that name is what catalogues and citation tools will repeat. Spend one sentence on the subject; future you, searching an archive at midnight, will be grateful. Choose four to eight keywords that mix the document type, the topic, the audience and the year. Then run the inspector one last time to confirm the page sizes are uniform and the version is sensible, and only then upload or send the file. Teams that adopt this tiny checklist find their document libraries become dramatically easier to search, their downloads present professionally in every viewer, and their files keep introducing themselves correctly long after the original context is forgotten.</p>
+  <p class="mt-4 text-slate-600 leading-relaxed">Whether you are fixing one embarrassing tab title or standardising a whole archive, DocuMeta gives you the full picture first — facts, metadata and pages in a single inspector — and then a focused editor that changes exactly what you intend. Load a file, look at what it has been saying about itself, and make it say the right thing.</p>
+
+  <h3 class="mt-10 text-xl font-bold text-steel-950">Frequently asked questions</h3>
+  <div class="mt-4 space-y-3">
+    <details class="border border-steel-200 rounded-xl bg-steel-50 px-5 py-4">
+      <summary class="font-bold text-steel-950 cursor-pointer flex justify-between items-center gap-3">What PDF metadata can DocuMeta show and edit?<span class="faq-arrow text-steel-500" aria-hidden="true">▾</span></summary>
+      <p class="mt-2 text-sm text-slate-600 leading-relaxed">DocuMeta shows the document title, author, subject, keywords, creator, producer, creation date and modification date stored inside a PDF, plus file facts such as page count, page sizes, file size and PDF version. You can edit the title, author, subject and keywords and download an updated copy with the new values written in.</p>
+    </details>
+    <details class="border border-steel-200 rounded-xl bg-steel-50 px-5 py-4">
+      <summary class="font-bold text-steel-950 cursor-pointer flex justify-between items-center gap-3">Is my PDF uploaded to a server when I use DocuMeta?<span class="faq-arrow text-steel-500" aria-hidden="true">▾</span></summary>
+      <p class="mt-2 text-sm text-slate-600 leading-relaxed">No. DocuMeta runs entirely in your browser using the pdf-lib library. Your file is read from your device, inspected and edited on your device, and the updated copy is generated locally. Nothing is uploaded, stored or tracked, which makes it safe for contracts, invoices and other private documents.</p>
+    </details>
+    <details class="border border-steel-200 rounded-xl bg-steel-50 px-5 py-4">
+      <summary class="font-bold text-steel-950 cursor-pointer flex justify-between items-center gap-3">Why does my PDF show a different title in the viewer tab?<span class="faq-arrow text-steel-500" aria-hidden="true">▾</span></summary>
+      <p class="mt-2 text-sm text-slate-600 leading-relaxed">Most PDF viewers display the metadata title in the tab or title bar when one is set, and fall back to the file name when it is not. If your document opens with an outdated or unhelpful tab title, the metadata title is usually the reason. Edit it in DocuMeta, download the updated copy, and viewers will show the new title instead.</p>
+    </details>
+    <details class="border border-steel-200 rounded-xl bg-steel-50 px-5 py-4">
+      <summary class="font-bold text-steel-950 cursor-pointer flex justify-between items-center gap-3">Will editing metadata change the content or quality of my PDF?<span class="faq-arrow text-steel-500" aria-hidden="true">▾</span></summary>
+      <p class="mt-2 text-sm text-slate-600 leading-relaxed">No. Metadata lives in a separate information dictionary inside the PDF file. Changing the title, author, subject or keywords does not re-render pages, recompress images or alter text, so the visible content and visual quality of your document stay exactly the same.</p>
+    </details>
+    <details class="border border-steel-200 rounded-xl bg-steel-50 px-5 py-4">
+      <summary class="font-bold text-steel-950 cursor-pointer flex justify-between items-center gap-3">Can DocuMeta edit a password-protected PDF?<span class="faq-arrow text-steel-500" aria-hidden="true">▾</span></summary>
+      <p class="mt-2 text-sm text-slate-600 leading-relaxed">DocuMeta cannot open PDFs that require a password to view, because the file contents are encrypted. If you have the password, open the file in a desktop PDF application, remove the open password or print it to a new PDF, and then edit the metadata of that copy in DocuMeta.</p>
+    </details>
+    <details class="border border-steel-200 rounded-xl bg-steel-50 px-5 py-4">
+      <summary class="font-bold text-steel-950 cursor-pointer flex justify-between items-center gap-3">How do page sizes in the inspector help me?<span class="faq-arrow text-steel-500" aria-hidden="true">▾</span></summary>
+      <p class="mt-2 text-sm text-slate-600 leading-relaxed">The inspector lists every page with its exact dimensions in points, inches and millimetres, its orientation, and whether it matches a standard size such as A4 or Letter. That helps you catch mixed-size documents before printing, confirm a file meets a submission specification, and spot pages that were scanned or exported at the wrong size.</p>
+    </details>
+  </div>
+</article>
+
+<footer class="border-t border-steel-100 bg-steel-50">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
+    <p class="font-bold text-steel-900">DocuMeta</p>
+    <p>Inspect first. Edit exactly what you intend. Files never leave your device.</p>
+    <a href="#top" class="font-semibold text-steel-600 hover:text-steel-800">Back to top</a>
+  </div>
+<p class="fx-credit" style="text-align:center;font-size:12.5px;opacity:.62;margin:10px auto 2px;letter-spacing:.01em">Made by <a href="https://fixoraa.tech" target="_blank" rel="noopener" style="color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px">Fixoraa</a></p>
+</footer>
+
+<script id="lib-documeta">
+var DocuMetaLib = (function () {
+  'use strict';
+
+  function formatBytes(bytes) {
+    if (typeof bytes !== 'number' || !isFinite(bytes) || bytes < 0) return '—';
+    if (bytes === 0) return '0 B';
+    var units = ['B', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(1024));
+    if (i >= units.length) i = units.length - 1;
+    var val = bytes / Math.pow(1024, i);
+    return (i === 0 ? String(Math.round(val)) : val.toFixed(val >= 100 ? 0 : 2)) + ' ' + units[i];
+  }
+
+  function pdfVersionFromHeader(header) {
+    if (typeof header !== 'string') return null;
+    var m = header.match(/%PDF-(\d+\.\d+)/);
+    return m ? m[1] : null;
+  }
+
+  // Standard page sizes in points (1 pt = 1/72 inch), tolerance in points.
+  var STANDARD_SIZES = [
+    { name: 'A3', w: 841.89, h: 1190.55 },
+    { name: 'A4', w: 595.28, h: 841.89 },
+    { name: 'A5', w: 419.53, h: 595.28 },
+    { name: 'A6', w: 297.64, h: 419.53 },
+    { name: 'Letter', w: 612, h: 792 },
+    { name: 'Legal', w: 612, h: 1008 },
+    { name: 'Tabloid', w: 792, h: 1224 },
+    { name: 'Executive', w: 522, h: 756 }
+  ];
+
+  function matchStandardSize(w, h, tolerance) {
+    var tol = typeof tolerance === 'number' ? tolerance : 3;
+    if (!(w > 0) || !(h > 0)) return null;
+    for (var i = 0; i < STANDARD_SIZES.length; i++) {
+      var s = STANDARD_SIZES[i];
+      if (Math.abs(w - s.w) <= tol && Math.abs(h - s.h) <= tol) return s.name;
+      if (Math.abs(w - s.h) <= tol && Math.abs(h - s.w) <= tol) return s.name;
+    }
+    return null;
+  }
+
+  function pageOrientation(w, h) {
+    if (!(w > 0) || !(h > 0)) return 'unknown';
+    if (Math.abs(w - h) < 0.5) return 'square';
+    return w > h ? 'landscape' : 'portrait';
+  }
+
+  function ptToInches(pt) { return pt / 72; }
+  function ptToMm(pt) { return pt * 25.4 / 72; }
+
+  function describePageSize(w, h) {
+    if (!(w > 0) || !(h > 0)) return 'Unknown size';
+    var std = matchStandardSize(w, h);
+    var label = Math.round(w) + ' × ' + Math.round(h) + ' pt · ' +
+      ptToInches(w).toFixed(2) + ' × ' + ptToInches(h).toFixed(2) + ' in · ' +
+      Math.round(ptToMm(w)) + ' × ' + Math.round(ptToMm(h)) + ' mm';
+    if (std) label += ' · ' + std;
+    return label;
+  }
+
+  function summarizePages(sizes) {
+    var list = Array.isArray(sizes) ? sizes.filter(function (s) { return s && s.w > 0 && s.h > 0; }) : [];
+    var seen = {};
+    var unique = [];
+    list.forEach(function (s) {
+      var key = Math.round(s.w) + 'x' + Math.round(s.h);
+      if (!seen[key]) { seen[key] = true; unique.push({ w: s.w, h: s.h }); }
+    });
+    var allUniform = list.length > 0 && unique.length === 1;
+    return { count: list.length, uniqueCount: unique.length, unique: unique, uniform: allUniform };
+  }
+
+  function normalizeKeywords(input) {
+    var raw = [];
+    if (Array.isArray(input)) raw = input;
+    else if (typeof input === 'string') raw = input.split(/[,;\n]/);
+    else return [];
+    var seen = {};
+    var out = [];
+    raw.forEach(function (k) {
+      var v = String(k == null ? '' : k).trim();
+      var key = v.toLowerCase();
+      if (v && !seen[key]) { seen[key] = true; out.push(v); }
+    });
+    return out;
+  }
+
+  var META_FIELDS = ['title', 'author', 'subject', 'keywords'];
+
+  // Returns cleaned values; empty string means "clear this field".
+  function cleanMetadata(input) {
+    var src = input || {};
+    var out = {};
+    META_FIELDS.forEach(function (f) {
+      if (f === 'keywords') {
+        out.keywords = normalizeKeywords(src.keywords);
+      } else {
+        out[f] = String(src[f] == null ? '' : src[f]).replace(/\s+/g, ' ').trim();
+      }
+    });
+    return out;
+  }
+
+  function validateMetadata(input) {
+    var errors = [];
+    var v = cleanMetadata(input);
+    if (v.title.length > 512) errors.push('Title is too long (max 512 characters).');
+    if (v.author.length > 256) errors.push('Author is too long (max 256 characters).');
+    if (v.subject.length > 1024) errors.push('Subject is too long (max 1024 characters).');
+    if (v.keywords.length > 50) errors.push('Too many keywords (max 50).');
+    v.keywords.forEach(function (k) {
+      if (k.length > 100) errors.push('Keyword "' + k.slice(0, 20) + '…" is too long (max 100 characters).');
+    });
+    return errors;
+  }
+
+  // Compare original vs edited metadata; returns list of changed field names.
+  function diffMetadata(original, edited) {
+    var a = cleanMetadata(original);
+    var b = cleanMetadata(edited);
+    var changed = [];
+    META_FIELDS.forEach(function (f) {
+      var av = f === 'keywords' ? a.keywords.join(', ') : a[f];
+      var bv = f === 'keywords' ? b.keywords.join(', ') : b[f];
+      if (av !== bv) changed.push(f);
+    });
+    return changed;
+  }
+
+  function formatPdfDate(d) {
+    if (!d) return '—';
+    var date = d instanceof Date ? d : new Date(d);
+    if (isNaN(date.getTime())) return '—';
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) +
+      ', ' + date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function outputFileName(originalName) {
+    var base = String(originalName || 'document').replace(/\.pdf$/i, '').trim();
+    if (!base) base = 'document';
+    return base + '-updated.pdf';
+  }
+
+  return {
+    formatBytes: formatBytes,
+    pdfVersionFromHeader: pdfVersionFromHeader,
+    matchStandardSize: matchStandardSize,
+    pageOrientation: pageOrientation,
+    ptToInches: ptToInches,
+    ptToMm: ptToMm,
+    describePageSize: describePageSize,
+    summarizePages: summarizePages,
+    normalizeKeywords: normalizeKeywords,
+    cleanMetadata: cleanMetadata,
+    validateMetadata: validateMetadata,
+    diffMetadata: diffMetadata,
+    formatPdfDate: formatPdfDate,
+    outputFileName: outputFileName,
+    STANDARD_SIZES: STANDARD_SIZES,
+    META_FIELDS: META_FIELDS
+  };
+})();
+
+if (typeof module !== 'undefined' && module.exports) { module.exports = DocuMetaLib; }
+
+</script>
+
+<script>
+(function () {
+  var L = DocuMetaLib;
+  var $ = function (id) { return document.getElementById(id); };
+  var dropzone = $('dropzone'), fileInput = $('fileInput');
+  var state = { doc: null, fileName: '', original: null, pageSizes: [] };
+
+  function showError(msg) {
+    var e = $('toolError'); e.textContent = msg; e.classList.remove('hidden');
+    $('toolNotice').classList.add('hidden');
+  }
+  function showNotice(msg) {
+    var n = $('toolNotice'); n.textContent = msg; n.classList.remove('hidden');
+    $('toolError').classList.add('hidden');
+  }
+  function clearMessages() { $('toolError').classList.add('hidden'); $('toolNotice').classList.add('hidden'); }
+  function dash(v) { return v ? v : '—'; }
+
+  function currentFormValues() {
+    return { title: $('fTitle').value, author: $('fAuthor').value, subject: $('fSubject').value, keywords: $('fKeywords').value };
+  }
+
+  function updateChangeBadge() {
+    var badge = $('changeBadge');
+    if (!state.original) { badge.classList.add('hidden'); return; }
+    var changed = L.diffMetadata(state.original, currentFormValues());
+    if (changed.length === 0) { badge.classList.add('hidden'); }
+    else { badge.textContent = changed.length + ' changed'; badge.classList.remove('hidden'); }
+  }
+
+  function setEditorEnabled(on) {
+    ['fTitle','fAuthor','fSubject','fKeywords','downloadBtn','clearBtn','resetBtn'].forEach(function (id) { $(id).disabled = !on; });
+  }
+
+  async function loadFile(file) {
+    clearMessages();
+    if (!file) return;
+    if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') {
+      showError('That does not look like a PDF file. Please choose a file ending in .pdf.');
+      return;
+    }
+    $('inspectStatus').textContent = 'reading…';
+    try {
+      var buf = await file.arrayBuffer();
+      var headerText = new TextDecoder('latin1').decode(new Uint8Array(buf.slice(0, 1024)));
+      var version = L.pdfVersionFromHeader(headerText);
+      var doc = await PDFLib.PDFDocument.load(buf, { ignoreEncryption: false });
+      state.doc = doc; state.fileName = file.name; state.pageSizes = [];
+
+      var safe = function (fn) { try { var v = fn(); return v == null ? '' : v; } catch (e) { return ''; } };
+      var meta = {
+        title: safe(function () { return doc.getTitle(); }),
+        author: safe(function () { return doc.getAuthor(); }),
+        subject: safe(function () { return doc.getSubject(); }),
+        keywords: safe(function () { return doc.getKeywords(); })
+      };
+      state.original = L.cleanMetadata(meta);
+
+      $('factName').textContent = file.name;
+      $('factSize').textContent = L.formatBytes(file.size);
+      $('factVersion').textContent = version ? 'PDF ' + version : 'Unknown';
+      var pages = doc.getPages();
+      $('factPages').textContent = String(pages.length);
+      var rowsHtml = '';
+      pages.forEach(function (page, i) {
+        var size = page.getSize();
+        var rot = 0; try { rot = page.getRotation().angle; } catch (e) {}
+        state.pageSizes.push({ w: size.width, h: size.height });
+        var std = L.matchStandardSize(size.width, size.height) || 'Custom';
+        var zebra = i % 2 ? ' bg-steel-50' : '';
+        rowsHtml += '<tr class="border-t border-steel-100' + zebra + '">' +
+          '<td class="px-3 py-2 text-slate-500">' + (i + 1) + '</td>' +
+          '<td class="px-3 py-2 text-steel-950">' + L.describePageSize(size.width, size.height).split(' · ').slice(0, 3).join(' · ') + '</td>' +
+          '<td class="px-3 py-2">' + std + '</td>' +
+          '<td class="px-3 py-2 capitalize">' + L.pageOrientation(size.width, size.height) + '</td>' +
+          '<td class="px-3 py-2">' + rot + '°</td></tr>';
+      });
+      $('pageRows').innerHTML = rowsHtml;
+      var summary = L.summarizePages(state.pageSizes);
+      $('factUniform').textContent = summary.count === 0 ? '—' :
+        (summary.uniform ? 'Uniform — ' + (L.matchStandardSize(summary.unique[0].w, summary.unique[0].h) || 'custom size')
+                          : summary.uniqueCount + ' different sizes');
+
+      $('factCreator').textContent = dash(safe(function () { return doc.getCreator(); }));
+      $('factProducer').textContent = dash(safe(function () { return doc.getProducer(); }));
+      $('factDates').textContent = L.formatPdfDate(safe(function () { return doc.getCreationDate(); })) + '  /  ' +
+                                   L.formatPdfDate(safe(function () { return doc.getModificationDate(); }));
+
+      var clean = state.original;
+      $('curTitle').textContent = dash(clean.title);
+      $('curAuthor').textContent = dash(clean.author);
+      $('curSubject').textContent = dash(clean.subject);
+      $('curKeywords').textContent = dash(clean.keywords.join(', '));
+
+      $('fTitle').value = clean.title;
+      $('fAuthor').value = clean.author;
+      $('fSubject').value = clean.subject;
+      $('fKeywords').value = clean.keywords.join(', ');
+
+      ['factsWrap','currentWrap','pagesWrap'].forEach(function (id) { $(id).classList.remove('hidden'); });
+      $('emptyState').classList.add('hidden');
+      setEditorEnabled(true);
+      updateChangeBadge();
+      $('inspectStatus').textContent = pages.length + (pages.length === 1 ? ' page' : ' pages') + ' · ready';
+      showNotice('PDF loaded. Review the inspection on the left, edit the fields on the right, then download your updated copy.');
+    } catch (err) {
+      state.doc = null; state.original = null;
+      $('inspectStatus').textContent = 'load failed';
+      setEditorEnabled(false);
+      var msg = String(err && err.message || err);
+      if (/encrypt/i.test(msg)) showError('This PDF is password-protected or encrypted, so it cannot be opened here. Remove the open password in a desktop PDF app first, then try again.');
+      else showError('This file could not be read as a valid PDF. It may be damaged, truncated, or not a real PDF. Try opening it in a PDF viewer to confirm.');
+    }
+  }
+
+  dropzone.addEventListener('click', function () { fileInput.click(); });
+  dropzone.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+  fileInput.addEventListener('change', function () { if (fileInput.files[0]) loadFile(fileInput.files[0]); fileInput.value = ''; });
+  ['dragenter','dragover'].forEach(function (ev) { dropzone.addEventListener(ev, function (e) { e.preventDefault(); dropzone.classList.add('drop-active'); }); });
+  ['dragleave','drop'].forEach(function (ev) { dropzone.addEventListener(ev, function (e) { e.preventDefault(); dropzone.classList.remove('drop-active'); }); });
+  dropzone.addEventListener('drop', function (e) {
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) loadFile(f);
+  });
+
+  ['fTitle','fAuthor','fSubject','fKeywords'].forEach(function (id) { $(id).addEventListener('input', updateChangeBadge); });
+
+  $('clearBtn').addEventListener('click', function () {
+    $('fTitle').value = ''; $('fAuthor').value = ''; $('fSubject').value = ''; $('fKeywords').value = '';
+    updateChangeBadge();
+  });
+  $('resetBtn').addEventListener('click', function () {
+    if (!state.original) return;
+    $('fTitle').value = state.original.title;
+    $('fAuthor').value = state.original.author;
+    $('fSubject').value = state.original.subject;
+    $('fKeywords').value = state.original.keywords.join(', ');
+    updateChangeBadge();
+  });
+
+  $('copyReportBtn').addEventListener('click', function () {
+    if (!state.doc) return;
+    var lines = [
+      'DocuMeta inspection report',
+      'File: ' + $('factName').textContent,
+      'Size: ' + $('factSize').textContent,
+      'Version: ' + $('factVersion').textContent,
+      'Pages: ' + $('factPages').textContent,
+      'Page sizes: ' + $('factUniform').textContent,
+      'Title: ' + $('curTitle').textContent,
+      'Author: ' + $('curAuthor').textContent,
+      'Subject: ' + $('curSubject').textContent,
+      'Keywords: ' + $('curKeywords').textContent,
+      'Creator: ' + $('factCreator').textContent,
+      'Producer: ' + $('factProducer').textContent,
+      'Created / Modified: ' + $('factDates').textContent
+    ].join('\n');
+    function done() { showNotice('Inspection report copied to your clipboard.'); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(lines).then(done, function () { showError('Copy was blocked by the browser. You can read the values in the inspector panel instead.'); });
+    else showError('Clipboard copy is not available in this browser.');
+  });
+
+  $('metaForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    if (!state.doc) { showError('Load a PDF first, then download your updated copy.'); return; }
+    var values = currentFormValues();
+    var errors = L.validateMetadata(values);
+    if (errors.length) { showError(errors.join(' ')); return; }
+    var clean = L.cleanMetadata(values);
+    var btn = $('downloadBtn');
+    btn.disabled = true; btn.textContent = 'Building your PDF…';
+    try {
+      state.doc.setTitle(clean.title);
+      state.doc.setAuthor(clean.author);
+      state.doc.setSubject(clean.subject);
+      state.doc.setKeywords(clean.keywords);
+      state.doc.setModificationDate(new Date());
+      var bytes = await state.doc.save();
+      var blob = new Blob([bytes], { type: 'application/pdf' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = L.outputFileName(state.fileName);
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      state.original = clean;
+      $('curTitle').textContent = dash(clean.title);
+      $('curAuthor').textContent = dash(clean.author);
+      $('curSubject').textContent = dash(clean.subject);
+      $('curKeywords').textContent = dash(clean.keywords.join(', '));
+      $('factDates').textContent = $('factDates').textContent.split('  /  ')[0] + '  /  ' + L.formatPdfDate(new Date());
+      updateChangeBadge();
+      showNotice('Updated PDF downloaded as ' + L.outputFileName(state.fileName) + '. Your original file was not changed.');
+    } catch (err) {
+      showError('Something went wrong while building the updated PDF. Your original file is unchanged — please try again.');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Download updated PDF';
+    }
+  });
+})();
+</script>
+</body>
+</html>
