@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en" id="top">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocBind — Free Online PDF Merger, Splitter & Page Rotator (100% In-Browser)</title>
+<meta name="description" content="DocBind merges, splits, rotates and reorders PDF pages entirely in your browser. Drag-to-reorder files, page thumbnails, extract pages by range — free, unlimited, no uploads, no watermarks.">
+<link rel="canonical" href="https://pdf.fixoraa.tech/docbind/">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; background: #F4F3F1; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .charcoal { background: #27272A; }
+  .paper { background: #FAF9F7; }
+  .brand-red { color: #DC2626; }
+  .bg-brand-red { background: #DC2626; }
+  .bg-brand-red:hover { background: #B91C1C; }
+  .ring-brand:focus { outline: 2px solid #DC2626; outline-offset: 2px; }
+  .drop-active { border-color: #DC2626 !important; background: #FEF2F2 !important; }
+  .file-card.dragging { opacity: .4; }
+  .page-thumb { transition: transform .25s ease, box-shadow .2s ease; }
+  .excluded-thumb { filter: grayscale(1) brightness(.72); }
+  @media print { .no-print { display: none !important; } }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: #C9C7C2; border-radius: 8px; }
+  details.faq summary::-webkit-details-marker { display: none; }
+</style>
+</head>
+<body class="text-zinc-800 antialiased">
+
+<!-- ============ HEADER ============ -->
+<header class="charcoal sticky top-0 z-50 shadow-md">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5">
+      <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-red text-white font-extrabold text-lg">D</span>
+      <span class="text-white font-extrabold text-xl tracking-tight">Doc<span class="brand-red">Bind</span></span>
+    </a>
+    <nav class="flex items-center gap-5 text-sm font-medium">
+      <a href="#top" class="text-zinc-300 hover:text-white">Home</a>
+      <a href="https://fixoraa.tech" class="text-zinc-300 hover:text-white">More Tools</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ TOP AD ============ -->
+<div class="no-print mx-auto max-w-6xl px-4 sm:px-6 pt-4" role="complementary" aria-label="Advertisement">
+  <div class="mx-auto text-center" style="max-width:728px">
+    <span class="block text-[10px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">Advertisement</span>
+    <div class="flex justify-center overflow-hidden">
+      <div class="origin-top scale-[0.44] sm:scale-100 shrink-0">
+        <script>
+          atOptions = { 'key' : '4e68ac77881c17fe128a46565d9a4e8c', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };
+        </script>
+        <script src="https://www.highrevenueformat.com/4e68ac77881c17fe128a46565d9a4e8c/invoke.js"></script>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAIN ============ -->
+<main class="mx-auto max-w-6xl px-4 sm:px-6 py-8">
+
+  <!-- Hero -->
+  <div class="text-center mb-8">
+    <div class="flex flex-wrap items-center justify-center gap-2 mb-4">
+      <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold px-3 py-1.5">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+        Unlimited Free Usage
+      </span>
+      <span class="inline-flex items-center gap-1.5 rounded-full bg-zinc-800 text-zinc-100 text-xs font-semibold px-3 py-1.5">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+        Files never leave your device — no uploads, ever
+      </span>
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900">Merge, split &amp; organise PDFs <span class="brand-red">right in your browser</span></h1>
+    <p class="mt-3 text-zinc-600 max-w-2xl mx-auto">Drop in your PDFs, drag them into order, preview every page, rotate the sideways ones, delete the junk, and download one clean document. Everything is processed locally on your device — your files are never uploaded to any server.</p>
+  </div>
+
+  <!-- ======== WORKSPACE ======== -->
+  <section aria-label="PDF workspace" class="paper rounded-2xl shadow-lg border border-zinc-200 overflow-hidden">
+
+    <!-- Workspace toolbar -->
+    <div class="charcoal px-4 sm:px-6 py-3 flex flex-wrap items-center gap-3">
+      <div class="flex rounded-lg overflow-hidden border border-zinc-600" role="tablist" aria-label="Tool mode">
+        <button id="tab-merge" role="tab" aria-selected="true" class="px-4 sm:px-6 py-2.5 text-sm font-semibold bg-brand-red text-white">Merge PDFs</button>
+        <button id="tab-split" role="tab" aria-selected="false" class="px-4 sm:px-6 py-2.5 text-sm font-semibold text-zinc-300 hover:text-white">Split / Extract</button>
+      </div>
+      <div class="ml-auto flex items-center gap-3">
+        <span id="stat-line" class="text-xs text-zinc-400 mono">0 files · 0 pages</span>
+        <button id="btn-clear" class="text-xs font-semibold text-zinc-300 hover:text-white border border-zinc-600 rounded-lg px-3 py-2">Clear all</button>
+      </div>
+    </div>
+
+    <div class="p-4 sm:p-6">
+      <!-- Dropzone -->
+      <div id="dropzone" class="border-2 border-dashed border-zinc-300 rounded-xl bg-white p-6 sm:p-10 text-center cursor-pointer transition-colors" role="button" tabindex="0" aria-label="Add PDF files">
+        <div class="mx-auto w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-3">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><path d="M12 16V4m0 0l-4 4m4-4l4 4"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
+        </div>
+        <p class="font-semibold text-zinc-800">Drag &amp; drop PDF files here, or <span class="brand-red underline">browse</span></p>
+        <p class="text-xs text-zinc-500 mt-1.5">PDF only · processed 100% on your device · nothing is uploaded</p>
+        <input id="file-input" type="file" accept="application/pdf,.pdf" multiple class="hidden">
+      </div>
+
+      <!-- File queue -->
+      <div class="mt-5">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-bold text-zinc-700 uppercase tracking-wider">File queue <span class="text-zinc-400 font-medium normal-case">(drag to reorder)</span></h2>
+          <span id="queue-hint" class="text-xs text-zinc-400 hidden sm:block">Order = order in the merged PDF</span>
+        </div>
+        <div id="queue" class="space-y-2.5 min-h-[64px]"></div>
+        <div id="queue-empty" class="rounded-xl bg-white border border-zinc-200 p-6 text-center text-sm text-zinc-500">
+          No files yet. Add at least one PDF to get started — merge two or more into a single document, or split one file into pieces.
+        </div>
+      </div>
+
+      <!-- Page inspector -->
+      <div id="inspector" class="mt-5 hidden">
+        <div class="flex flex-wrap items-center gap-2 mb-3">
+          <h2 class="text-sm font-bold text-zinc-700 uppercase tracking-wider">Pages in <span id="insp-name" class="mono normal-case text-zinc-900"></span></h2>
+          <div class="ml-auto flex items-center gap-2">
+            <button id="btn-rotall-l" class="text-xs font-semibold border border-zinc-300 rounded-lg px-2.5 py-1.5 bg-white hover:border-red-400" title="Rotate all pages 90° left">↺ All</button>
+            <button id="btn-rotall-r" class="text-xs font-semibold border border-zinc-300 rounded-lg px-2.5 py-1.5 bg-white hover:border-red-400" title="Rotate all pages 90° right">↻ All</button>
+            <button id="btn-rot-reset" class="text-xs font-semibold border border-zinc-300 rounded-lg px-2.5 py-1.5 bg-white hover:border-red-400">Reset rotations</button>
+            <button id="btn-insp-close" class="text-xs font-semibold text-zinc-500 hover:text-zinc-800 px-2 py-1.5">✕ Close</button>
+          </div>
+        </div>
+        <div id="page-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3"></div>
+        <p class="text-xs text-zinc-500 mt-2">Tip: rotate sideways scans upright, and exclude cover or blank pages — exclusions and rotations apply to both Merge and Split modes.</p>
+      </div>
+
+      <!-- Split controls -->
+      <div id="split-panel" class="mt-5 hidden rounded-xl bg-white border border-zinc-200 p-4 sm:p-5">
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label for="split-source" class="text-xs font-bold uppercase tracking-wider text-zinc-600">Source file</label>
+            <select id="split-source" class="mt-1.5 w-full border border-zinc-300 rounded-lg px-3 py-2.5 text-sm bg-white ring-brand"></select>
+          </div>
+          <div>
+            <label for="split-range" class="text-xs font-bold uppercase tracking-wider text-zinc-600">Pages to extract <span class="normal-case font-medium text-zinc-400">(e.g. 1-3, 5, 8-)</span></label>
+            <input id="split-range" type="text" placeholder="1-3, 5, 8-" class="mono mt-1.5 w-full border border-zinc-300 rounded-lg px-3 py-2.5 text-sm ring-brand">
+            <p id="split-preview" class="text-xs text-zinc-500 mt-1.5">Formats: <span class="mono">5</span> single page · <span class="mono">1-3</span> range · <span class="mono">8-</span> from 8 to end · <span class="mono">-4</span> first 4 pages</p>
+          </div>
+        </div>
+        <div class="mt-4 flex flex-wrap items-center gap-3">
+          <button id="btn-extract" class="bg-brand-red text-white text-sm font-bold rounded-lg px-5 py-2.5 shadow">Extract pages → one PDF</button>
+          <div class="flex items-center gap-2 text-sm">
+            <span class="text-zinc-600 text-xs font-semibold">or split every</span>
+            <input id="split-every" type="number" min="1" max="500" value="5" class="w-16 border border-zinc-300 rounded-lg px-2 py-2 text-sm ring-brand" aria-label="Pages per split file">
+            <span class="text-zinc-600 text-xs font-semibold">pages</span>
+            <button id="btn-split-every" class="text-sm font-bold rounded-lg px-4 py-2.5 border-2 border-red-600 text-red-700 hover:bg-red-50">Split into files</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action bar -->
+      <div class="mt-6 rounded-xl charcoal p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex-1">
+          <label for="out-name" class="text-xs font-bold uppercase tracking-wider text-zinc-400">Output filename</label>
+          <input id="out-name" type="text" value="docbind-merged.pdf" class="mono mt-1 w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 ring-brand">
+        </div>
+        <button id="btn-merge" class="bg-brand-red text-white font-extrabold rounded-xl px-8 py-3.5 text-base shadow-lg disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap">Merge PDFs ⬇</button>
+      </div>
+
+      <!-- Progress / result -->
+      <div id="progress-wrap" class="mt-4 hidden">
+        <div class="flex justify-between text-xs font-semibold text-zinc-600 mb-1.5"><span id="progress-label">Working…</span><span id="progress-pct">0%</span></div>
+        <div class="h-2.5 rounded-full bg-zinc-200 overflow-hidden"><div id="progress-bar" class="h-full bg-brand-red rounded-full transition-all" style="width:0%"></div></div>
+      </div>
+      <div id="result" class="mt-4 hidden rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex-1">
+          <p class="font-bold text-emerald-900">Done! Your PDF is ready.</p>
+          <p id="result-meta" class="text-sm text-emerald-800 mono"></p>
+        </div>
+        <a id="result-link" href="#" download class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg px-6 py-2.5 text-sm text-center">Download PDF</a>
+      </div>
+      <div id="err-box" class="mt-4 hidden rounded-xl border-2 border-red-200 bg-red-50 p-4 text-sm text-red-800"></div>
+    </div>
+  </section>
+
+  <!-- ============ BOTTOM AD ============ -->
+  <div class="no-print mx-auto max-w-6xl px-4 sm:px-6 pb-4 mt-8" role="complementary" aria-label="Advertisement">
+    <div class="mx-auto text-center" style="max-width:300px">
+      <span class="block text-[10px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">Advertisement</span>
+      <div class="flex justify-center overflow-hidden">
+        <script>
+(function(grnp){
+var d = document,
+    s = d.createElement('script'),
+    l = d.currentScript || d.scripts[d.scripts.length - 1];
+s.settings = grnp || {};
+s.src = "\/\/peacefulbicycle.com\/bnXtVJsnd.GElF0oYVWQcY\/Qe\/mf9qu-ZqUtlZk\/PzTHcx1LM\/jWIZwkMTj\/U\/t-NrzmUnyOMsj\/AzydO\/Qx";
+s.async = true;
+s.referrerPolicy = 'no-referrer-when-downgrade';
+l.parentNode.insertBefore(s, l);
+})({})
+</script>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SEO ARTICLE ============ -->
+  <article id="seo-article" class="mt-6 paper rounded-2xl border border-zinc-200 shadow p-6 sm:p-10 text-zinc-700 leading-relaxed">
+    <h2 class="text-2xl sm:text-3xl font-extrabold text-zinc-900 mb-6">The complete guide to merging, splitting and organising PDF files</h2>
+
+    <h3 class="text-lg font-bold text-zinc-900 mt-8 mb-3">Why merging PDFs matters more than ever</h3>
+    <p class="mb-4">Documents have a habit of multiplying. A job application becomes five separate files: a cover letter, a resume, certificates, a portfolio and a reference letter. A research project splinters into a dozen downloaded papers. A home-loan application asks for bank statements, salary slips, identity proofs and address proofs — each one its own PDF. Sending all of these as separate attachments is messy for you and confusing for the person on the other end. A single, well-ordered PDF is easier to open, easier to search, easier to archive and far more professional.</p>
+    <p class="mb-4">Merging PDFs — combining multiple PDF files into one continuous document — solves this in seconds. Instead of juggling attachments, you produce one file with every page in the right order. Recruiters, universities, banks, government portals and clients all prefer a single document, and many application forms explicitly ask you to upload one combined PDF under a size limit. A merger tool is therefore not a niche utility; it is one of the most-used document tools in everyday digital life.</p>
+
+    <h3 class="text-lg font-bold text-zinc-900 mt-8 mb-3">How PDF merging actually works</h3>
+    <p class="mb-4">A PDF is essentially a container of pages, and each page is a self-contained description of text, images, fonts and vector graphics. Merging does not "glue images together" — it copies the page objects from each source document into a new document, in the order you choose, preserving fonts, vector content and selectable text. This is why a properly merged PDF stays sharp at any zoom level and keeps working with text search, unlike the old trick of printing and re-scanning pages, which destroys quality and balloons the file size.</p>
+    <p class="mb-4">Because pages are independent objects, a merger can also rearrange them freely: pages from the second file can come before pages from the first, duplicate pages can be skipped, and individual pages can be rotated or removed before the final document is assembled. DocBind builds on exactly this principle, but does all of it locally in your browser using the open-source pdf-lib engine — no server round-trip required.</p>
+
+    <h3 class="text-lg font-bold text-zinc-900 mt-8 mb-3">Merging vs splitting vs extracting: what is the difference?</h3>
+    <p class="mb-4">People often use these terms interchangeably, but they describe three different operations. <strong>Merging</strong> (also called combining or joining) takes two or more PDF files and produces one file containing all their pages. <strong>Splitting</strong> is the reverse: one large PDF is divided into several smaller files, for example breaking a 200-page report into chapters or separating a scanned bundle of receipts into one file per receipt. <strong>Extracting</strong> sits in between — you pull a subset of pages out of a document, such as pages 5–9 of a contract, and save them as their own file.</p>
+    <p class="mb-4">In practice you often need all three. You might split a scanned archive into individual documents, rotate the pages that were scanned sideways, discard blank pages, and then merge the cleaned pages back into one polished file. A tool that offers merge, split and extract in one workspace saves you from bouncing between three different websites, which is exactly why DocBind combines them: the Merge tab joins files, the Split / Extract tab pulls pages out of a single file by page range or chops it into equal chunks.</p>
+
+    <h3 class="text-lg font-bold text-zinc-900 mt-8 mb-3">The page-range syntax, explained</h3>
+    <p class="mb-4">When you extract pages, you describe which pages you want using a compact range syntax. A single number like <span class="mono bg-zinc-100 px-1.5 py-0.5 rounded text-sm">5</span> means just page 5. A dash creates a range: <span class="mono bg-zinc-100 px-1.5 py-0.5 rounded text-sm">1-3</span> means pages 1, 2 and 3. An open-ended range reaches the end of the document, so <span class="mono bg-zinc-100 px-1.5 py-0.5 rounded text-sm">8-</span> means page 8 through the last page — handy when you do not know or do not want to count the total. A leading dash counts from the start, so <span class="mono bg-zinc-100 px-1.5 py-0.5 rounded text-sm">-4</span> grabs the first four pages. Combine segments with commas: <span class="mono bg-zinc-100 px-1.5 py-0.5 rounded text-sm">1-3, 5, 8-</span> selects pages 1, 2, 3, 5 and everything from page 8 onward. Duplicate selections are automatically collapsed, and the extracted pages always come out in document order.</p>
+    <p class="mb-4">This syntax is worth learning because it appears in print dialogs, PDF tools and office software everywhere. A useful habit: when a portal asks for "the last three months of bank statements" and your statement PDF contains a full year, an expression like <span class="mono bg-zinc-100 px-1.5 py-0.5 rounded text-sm">10-12</span> pulls exactly the quarter you need without touching the rest.</p>
+
+    <h3 class="text-lg font-bold text-zinc-900 mt-8 mb-3">Rotating and cleaning pages before you merge</h3>
+    <p class="mb-4">Almost everyone has received a PDF where one page is sideways — usually a scanned form or a photo of a document captured in landscape. Readers can rotate their view, but the underlying page stays wrong, which looks sloppy when you forward the file. The proper fix is to rotate the page object itself in 90-degree steps before finalising the document. DocBind lets you preview every page as a thumbnail and rotate individual pages (or all pages at once) left or right until everything reads upright.</p>
+    <p class="mb-4">The same preview step is the right moment to remove junk: blank pages from double-sided scans, duplicate pages, or cover sheets you do not need. Excluding a page before merging keeps the final file smaller and cleaner, and it avoids the awkward "please ignore page 7" note in your email. Small cleanups like these are what separate a professional-looking document from a hastily stapled one.</p>
+
+    <h3 class="text-lg font-bold text-zinc-900 mt-8 mb-3">Privacy: where do your files actually go?</h3>
+    <p class="mb-4">This is the question most people forget to ask. The majority of free online PDF tools work by uploading your files to a remote server, processing them there, and sending the result back. That means your tax returns, medical reports, contracts and identity documents travel across the internet and sit on someone else's infrastructure — even if the site promises to delete them after an hour. For casual files this may be acceptable; for sensitive documents it is an unnecessary risk.</p>
+    <p class="mb-4">There is a better architecture: do the work on the device that already has the file. Modern browsers can parse, rearrange and rebuild PDFs entirely in JavaScript, which is what DocBind does. Your files are read from your disk into your browser's memory, transformed locally, and the result is downloaded straight back to you. Nothing is uploaded, no account is needed, and the tool keeps working even on a slow connection once the page has loaded. If a PDF tool ever asks you to upload a confidential document, it is worth checking whether a client-side alternative exists first.</p>
+
+    <h3 class="text-lg font-bold text-zinc-900 mt-8 mb-3">A practical workflow: from messy scans to one clean PDF</h3>
+    <p class="mb-4">Here is a workflow that covers the most common real-world task — assembling an application bundle. First, gather your files: export each document as PDF (most phones and office apps can "print to PDF"), and scan paper pages with your phone's document scanner. Second, add them to DocBind and drag the file cards into the final order — resume first, then certificates, then references, for example. Third, click through the files and inspect the page thumbnails: rotate any sideways pages, exclude blanks and duplicates. Fourth, type a clear output name such as <span class="mono bg-zinc-100 px-1.5 py-0.5 rounded text-sm">rahul-sharma-application.pdf</span> instead of accepting a generic name; the person opening it will thank you. Finally, hit merge and check the result: page count, order and orientation.</p>
+    <p class="mb-4">If a portal imposes a file-size limit and your merged PDF is too large, the split tab is your friend: extract just the required pages, or split a big file into smaller parts that each fit the limit. And if you only need three pages out of a fifty-page statement, extract those three instead of uploading the whole thing — less data shared, faster uploads, tidier records.</p>
+
+    <h3 class="text-lg font-bold text-zinc-900 mt-8 mb-3">Limitations worth knowing</h3>
+    <p class="mb-4">No tool handles everything. Password-protected PDFs cannot be opened without the password — encryption is designed to resist exactly this kind of processing, so you will need to unlock the file in a PDF reader first. Files with interactive form fields or digital signatures may lose some of that interactivity when their pages are copied into a new document; the visible content survives, but fillable fields and signatures generally do not transfer. Extremely large files (hundreds of megabytes or thousands of pages) can strain a browser tab's memory — if that happens, process the file in smaller batches. Finally, merging cannot fix a bad scan: if the source page is blurry or crooked, the merged output will be too, so always check the thumbnails before you download.</p>
+
+    <h3 class="text-lg font-bold text-zinc-900 mt-8 mb-3">Choosing a PDF tool: a quick checklist</h3>
+    <p class="mb-4">When you evaluate any PDF merger, run through five questions. One: is it free without watermarks or page limits that matter to you? Two: does it process files locally, or does it upload them? Three: can you reorder at the file level and inspect at the page level, including rotation and deletion? Four: does it offer split and extract alongside merge, so one tool covers the whole job? Five: does it work on your phone as well as your desktop, without an app install? DocBind was built to answer yes to all five — unlimited free usage, zero uploads, drag-to-reorder with live page thumbnails, merge plus split/extract plus rotation in a single workspace, and a responsive layout that works at phone widths.</p>
+    <p>Master these basics and document assembly stops being a chore. Whether you are submitting applications, archiving receipts, compiling reports or sharing reading material, the pattern is always the same: order the files, clean the pages, name the output clearly, and keep your private documents on your own device while you do it.</p>
+
+    <!-- FAQs -->
+    <h2 class="text-2xl font-extrabold text-zinc-900 mt-12 mb-6">Frequently asked questions</h2>
+    <div id="faq-list" class="space-y-3">
+      <details class="faq bg-white border border-zinc-200 rounded-xl p-4">
+        <summary class="font-semibold text-zinc-900 cursor-pointer list-none flex justify-between items-center">Is DocBind really free? Are there watermarks or page limits?<span class="brand-red text-xl leading-none">+</span></summary>
+        <p class="mt-2 text-sm">Yes — DocBind is completely free with unlimited usage. There is no signup, no paywall, no watermark stamped on your PDFs, and no artificial cap on how many files you merge. Because all processing happens in your browser, there is no server cost per document, which is what lets the tool stay free.</p>
+      </details>
+      <details class="faq bg-white border border-zinc-200 rounded-xl p-4">
+        <summary class="font-semibold text-zinc-900 cursor-pointer list-none flex justify-between items-center">Are my files uploaded to a server?<span class="brand-red text-xl leading-none">+</span></summary>
+        <p class="mt-2 text-sm">No. DocBind reads your files into your browser's own memory and builds the output PDF right there on your device using the pdf-lib engine. Your documents never travel over the network to any server, which makes it safe to use with sensitive files like contracts, financial statements or identity documents.</p>
+      </details>
+      <details class="faq bg-white border border-zinc-200 rounded-xl p-4">
+        <summary class="font-semibold text-zinc-900 cursor-pointer list-none flex justify-between items-center">How do I write page ranges for splitting or extracting?<span class="brand-red text-xl leading-none">+</span></summary>
+        <p class="mt-2 text-sm">Use numbers and dashes separated by commas. "5" picks page 5, "1-3" picks pages 1 to 3, "8-" picks page 8 through the end of the document, and "-4" picks the first four pages. You can combine them, e.g. "1-3, 5, 8-". Pages are always extracted in document order and duplicates are removed automatically.</p>
+      </details>
+      <details class="faq bg-white border border-zinc-200 rounded-xl p-4">
+        <summary class="font-semibold text-zinc-900 cursor-pointer list-none flex justify-between items-center">Can I rotate sideways pages or remove unwanted pages?<span class="brand-red text-xl leading-none">+</span></summary>
+        <p class="mt-2 text-sm">Yes. Click any file in the queue to open its page thumbnails. Each page can be rotated 90 degrees left or right, and any page can be excluded from the output entirely. You can also rotate all pages of a file at once — useful for a batch of sideways scans. Rotations and exclusions apply to both merging and splitting.</p>
+      </details>
+      <details class="faq bg-white border border-zinc-200 rounded-xl p-4">
+        <summary class="font-semibold text-zinc-900 cursor-pointer list-none flex justify-between items-center">Why won't my PDF open in DocBind?<span class="brand-red text-xl leading-none">+</span></summary>
+        <p class="mt-2 text-sm">The most common reason is password protection: encrypted PDFs cannot be processed without the password, so unlock the file in a PDF reader first and try again. Corrupted or partially downloaded files can also fail — re-export or re-download the PDF. If the file is extremely large, try processing it in smaller batches.</p>
+      </details>
+      <details class="faq bg-white border border-zinc-200 rounded-xl p-4">
+        <summary class="font-semibold text-zinc-900 cursor-pointer list-none flex justify-between items-center">Does merging change my document's quality or text?<span class="brand-red text-xl leading-none">+</span></summary>
+        <p class="mt-2 text-sm">No. Merging copies the original page objects — text, fonts, vector graphics and images — into the new document without re-rendering them, so quality, sharpness and selectable text are preserved exactly. Note that interactive form fields and digital signatures usually do not survive the copy, so flatten or finalise forms before merging.</p>
+      </details>
+    </div>
+  </article>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="charcoal mt-10">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2.5">
+      <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-brand-red text-white font-extrabold">D</span>
+      <span class="text-white font-extrabold tracking-tight">Doc<span class="brand-red">Bind</span></span>
+    </div>
+    <p class="text-xs text-zinc-400 text-center">Merge, split, rotate &amp; reorder PDFs — 100% in your browser. Your files never leave your device.</p>
+    <nav class="flex items-center gap-5 text-sm font-medium">
+      <a href="#top" class="text-zinc-400 hover:text-white">Home</a>
+      <a href="https://fixoraa.tech" class="text-zinc-400 hover:text-white">More Tools</a>
+    </nav>
+  </div>
+<p class="fx-credit" style="text-align:center;font-size:12.5px;opacity:.62;margin:10px auto 2px;letter-spacing:.01em">Made by <a href="https://fixoraa.tech" target="_blank" rel="noopener" style="color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px">Fixoraa</a></p>
+</footer>
+
+<div id="toast" class="no-print fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] hidden max-w-[92vw]">
+  <div class="bg-zinc-900 text-white text-sm font-medium rounded-xl px-5 py-3 shadow-2xl" id="toast-msg"></div>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "Is DocBind really free? Are there watermarks or page limits?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — DocBind is completely free with unlimited usage. No signup, no paywall, no watermarks, and no artificial caps. All processing happens in your browser."}},
+    {"@type": "Question", "name": "Are my files uploaded to a server?", "acceptedAnswer": {"@type": "Answer", "text": "No. Files are read into your browser's memory and the output PDF is built locally on your device. Nothing is ever uploaded to a server."}},
+    {"@type": "Question", "name": "How do I write page ranges for splitting or extracting?", "acceptedAnswer": {"@type": "Answer", "text": "Use numbers and dashes separated by commas: 5 picks page 5, 1-3 picks pages 1 to 3, 8- picks page 8 to the end, -4 picks the first four pages. Combine them like 1-3, 5, 8-."}},
+    {"@type": "Question", "name": "Can I rotate sideways pages or remove unwanted pages?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Open a file's page thumbnails to rotate individual pages 90 degrees, rotate all pages at once, or exclude pages from the output. Applies to both merge and split modes."}},
+    {"@type": "Question", "name": "Why won't my PDF open in DocBind?", "acceptedAnswer": {"@type": "Answer", "text": "Usually password protection — unlock the file in a PDF reader first. Corrupted downloads or extremely large files can also fail; try re-exporting or smaller batches."}},
+    {"@type": "Question", "name": "Does merging change my document's quality or text?", "acceptedAnswer": {"@type": "Answer", "text": "No. Page objects are copied without re-rendering, so quality and selectable text are preserved. Interactive form fields and digital signatures generally do not transfer."}}
+  ]
+}
+</script>
+
+<script>
+'use strict';
+/*
+ * DocBind pure logic — shared by the browser page and the Node test suite.
+ * UMD: exports `DocBindLogic` on window/self, or module.exports under Node.
+ */
+(function (root, factory) {
+  var api = factory();
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = api;
+  } else {
+    root.DocBindLogic = api;
+  }
+})(typeof self !== 'undefined' ? self : this, function () {
+
+  /**
+   * Parse a page-range expression into sorted, de-duplicated 0-based page indexes.
+   * Grammar: segments separated by "," or ";".
+   *   "5"      -> page 5
+   *   "1-3"    -> pages 1..3
+   *   "8-"     -> pages 8..end
+   *   "-4"     -> pages 1..4
+   * Whitespace is ignored. Page numbers are 1-based; totalPages is the page count.
+   * Returns { pages: number[], errors: string[] }.
+   */
+  function parsePageRanges(input, totalPages) {
+    var pages = [];
+    var errors = [];
+    if (!totalPages || totalPages < 1) {
+      return { pages: pages, errors: ['The document has no pages to select from.'] };
+    }
+    if (!input || !String(input).trim()) {
+      return { pages: pages, errors: ['Enter at least one page or range, e.g. 1-3, 5, 8-.'] };
+    }
+    var seen = {};
+    var segments = String(input).split(/[,;]/);
+    for (var i = 0; i < segments.length; i++) {
+      var seg = segments[i].replace(/\s+/g, '');
+      if (!seg) continue;
+      var from = null, to = null, ok = false;
+      var mSingle = /^(\d+)$/.exec(seg);
+      var mRange = /^(\d*)-(\d*)$/.exec(seg);
+      if (mSingle) {
+        from = to = parseInt(mSingle[1], 10);
+        ok = true;
+      } else if (mRange && (mRange[1] !== '' || mRange[2] !== '')) {
+        from = mRange[1] === '' ? 1 : parseInt(mRange[1], 10);
+        to = mRange[2] === '' ? totalPages : parseInt(mRange[2], 10);
+        ok = true;
+      }
+      if (!ok || from < 1 || to < 1) {
+        errors.push('Could not understand "' + segments[i].trim() + '" — use formats like 1-3, 5, or 8-.');
+        continue;
+      }
+      if (from > to) {
+        errors.push('Reversed range "' + segments[i].trim() + '" — the first page must come before the last.');
+        continue;
+      }
+      if (from > totalPages || to > totalPages) {
+        errors.push('Range "' + segments[i].trim() + '" is out of bounds — the document has ' + totalPages + ' page' + (totalPages === 1 ? '' : 's') + '.');
+        continue;
+      }
+      for (var p = from; p <= to; p++) {
+        if (!seen[p]) { seen[p] = true; pages.push(p - 1); }
+      }
+    }
+    pages.sort(function (a, b) { return a - b; });
+    if (pages.length === 0 && errors.length === 0) {
+      errors.push('Nothing matched — check your page numbers.');
+    }
+    return { pages: pages, errors: errors };
+  }
+
+  /**
+   * Add a rotation delta (degrees, may be negative) to a current angle,
+   * normalised to [0, 360).
+   */
+  function addRotation(current, delta) {
+    var r = (current + delta) % 360;
+    if (r < 0) r += 360;
+    return r;
+  }
+
+  /**
+   * Combine the rotation already stored on a PDF page with the user's
+   * extra rotation, normalised to [0, 360).
+   */
+  function combineRotations(pageAngle, userRotation) {
+    return addRotation(pageAngle || 0, userRotation || 0);
+  }
+
+  /**
+   * Return a new array with the item at fromIndex moved to toIndex.
+   * Out-of-range indexes leave the order unchanged (returns a copy).
+   */
+  function moveItem(arr, fromIndex, toIndex) {
+    var copy = arr.slice();
+    if (fromIndex < 0 || fromIndex >= copy.length) return copy;
+    if (toIndex < 0) toIndex = 0;
+    if (toIndex >= copy.length) toIndex = copy.length - 1;
+    var item = copy.splice(fromIndex, 1)[0];
+    copy.splice(toIndex, 0, item);
+    return copy;
+  }
+
+  /**
+   * Build a safe output filename. If custom is blank, uses the mode default.
+   * mode: 'merge' | 'extract' | 'split'
+   */
+  function makeOutputName(custom, mode) {
+    var defaults = { merge: 'docbind-merged.pdf', extract: 'docbind-extract.pdf', split: 'docbind-split.pdf' };
+    var name = (custom || '').trim();
+    if (!name) return defaults[mode] || defaults.merge;
+    name = name.replace(/\.pdf$/i, '');
+    name = name.toLowerCase()
+      .replace(/[\s_]+/g, '-')
+      .replace(/[^a-z0-9.\-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^[.\-]+|[.\-]+$/g, '');
+    if (!name) return defaults[mode] || defaults.merge;
+    if (name.length > 80) name = name.slice(0, 80);
+    return name + '.pdf';
+  }
+
+  /**
+   * Human-readable byte size.
+   */
+  function formatBytes(n) {
+    if (!n || n <= 0) return '0 B';
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) {
+      var kb = n / 1024;
+      return (kb >= 100 ? Math.round(kb) : Math.round(kb * 10) / 10) + ' KB';
+    }
+    var mb = n / 1048576;
+    return (mb >= 100 ? Math.round(mb) : Math.round(mb * 10) / 10) + ' MB';
+  }
+
+  return {
+    parsePageRanges: parsePageRanges,
+    addRotation: addRotation,
+    combineRotations: combineRotations,
+    moveItem: moveItem,
+    makeOutputName: makeOutputName,
+    formatBytes: formatBytes
+  };
+});
+
+</script>
+<script>
+(function () {
+  'use strict';
+  var L = window.DocBindLogic;
+  var PDFLib = window.PDFLib;
+  if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+
+  /* ---------- state ---------- */
+  var state = { files: new Map(), order: [], mode: 'merge', expanded: null, splitSource: null, busy: false };
+  var seq = 0;
+  var pdfjsCache = new Map(); // fileId -> pdf.js document
+  var dragId = null;
+
+  /* ---------- dom ---------- */
+  function $(id) { return document.getElementById(id); }
+  var dropzone = $('dropzone'), fileInput = $('file-input'), queue = $('queue'),
+      queueEmpty = $('queue-empty'), inspector = $('inspector'), pageGrid = $('page-grid'),
+      splitPanel = $('split-panel'), outName = $('out-name'), statLine = $('stat-line');
+
+  /* ---------- helpers ---------- */
+  var toastTimer = null;
+  function toast(msg) {
+    var t = $('toast'); $('toast-msg').textContent = msg;
+    t.classList.remove('hidden');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.add('hidden'); }, 4200);
+  }
+  function showErr(msg) {
+    var b = $('err-box');
+    b.innerHTML = '<strong>Something needs attention:</strong><br>' + msg;
+    b.classList.remove('hidden');
+  }
+  function hideErr() { $('err-box').classList.add('hidden'); }
+  function setBusy(b, label) {
+    state.busy = b;
+    $('btn-merge').disabled = b;
+    $('progress-wrap').classList.toggle('hidden', !b && !$('progress-wrap').dataset.keep);
+    if (label) $('progress-label').textContent = label;
+  }
+  function setProgress(done, total) {
+    var pct = total ? Math.round(done / total * 100) : 0;
+    $('progress-bar').style.width = pct + '%';
+    $('progress-pct').textContent = pct + '%';
+  }
+  function offerDownload(bytes, filename) {
+    var blob = new Blob([bytes], { type: 'application/pdf' });
+    var url = URL.createObjectURL(blob);
+    var a = $('result-link');
+    a.href = url; a.download = filename;
+    $('result-meta').textContent = filename + ' · ' + L.formatBytes(bytes.length);
+    $('result').classList.remove('hidden');
+    $('progress-wrap').dataset.keep = '1';
+    setProgress(1, 1); $('progress-label').textContent = 'Complete';
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+  }
+  function baseName(name) { return name.replace(/\.pdf$/i, ''); }
+
+  /* ---------- file intake ---------- */
+  async function addFiles(list) {
+    hideErr();
+    var added = 0;
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      if (!/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') { toast('"' + f.name + '" is not a PDF — skipped.'); continue; }
+      var buf;
+      try { buf = await f.arrayBuffer(); } catch (e) { toast('Could not read "' + f.name + '".'); continue; }
+      var bytes = new Uint8Array(buf);
+      if (bytes.length < 5 || bytes[0] !== 0x25 || bytes[1] !== 0x50 || bytes[2] !== 0x44 || bytes[3] !== 0x46) {
+        toast('"' + f.name + '" does not look like a valid PDF — skipped.'); continue;
+      }
+      var doc;
+      try { doc = await PDFLib.PDFDocument.load(bytes.slice()); }
+      catch (e) { toast('"' + f.name + '" could not be opened (it may be password-protected or damaged).'); continue; }
+      if (doc.getPageCount() === 0) { toast('"' + f.name + '" has no pages — skipped.'); continue; }
+      var id = 'f' + (++seq);
+      state.files.set(id, { id: id, name: f.name, bytes: bytes, doc: doc, pageCount: doc.getPageCount(), rot: {}, excluded: new Set() });
+      state.order.push(id);
+      if (!state.splitSource) state.splitSource = id;
+      added++;
+    }
+    if (added > 0) { renderAll(); }
+    else if (list.length > 0) { showErr('None of the selected files could be opened as PDFs.'); }
+  }
+
+  /* ---------- thumbnails (pdf.js, local) ---------- */
+  async function getPdfjsDoc(file) {
+    if (pdfjsCache.has(file.id)) return pdfjsCache.get(file.id);
+    var task = window.pdfjsLib.getDocument({ data: file.bytes.slice() }).promise;
+    var p = await task;
+    pdfjsCache.set(file.id, p);
+    return p;
+  }
+  async function paintThumb(canvas, file, pageNum, maxW) {
+    try {
+      var pdf = await getPdfjsDoc(file);
+      var page = await pdf.getPage(pageNum);
+      var v1 = page.getViewport({ scale: 1 });
+      var scale = maxW / v1.width;
+      var vp = page.getViewport({ scale: scale });
+      canvas.width = Math.max(1, Math.ceil(vp.width));
+      canvas.height = Math.max(1, Math.ceil(vp.height));
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+    } catch (e) { /* leave blank on render failure */ }
+  }
+
+  /* ---------- queue rendering ---------- */
+  function fileCardHTML(id) {
+    var f = state.files.get(id);
+    var idx = state.order.indexOf(id);
+    var sel = (state.mode === 'split' && state.splitSource === id) ? 'ring-2 ring-red-500 border-red-400' : '';
+    return '' +
+    '<div class="file-card flex items-center gap-3 bg-white border ' + sel + ' border-zinc-200 rounded-xl p-3 shadow-sm" draggable="true" data-id="' + id + '">' +
+      '<span class="cursor-grab text-zinc-400 text-lg select-none px-1" title="Drag to reorder">⠿</span>' +
+      '<canvas class="thumb w-12 h-16 rounded border border-zinc-200 bg-zinc-50 shrink-0" data-thumb="' + id + '"></canvas>' +
+      '<div class="flex-1 min-w-0">' +
+        '<p class="font-semibold text-sm text-zinc-900 truncate" title="' + escapeHtml(f.name) + '">' + escapeHtml(f.name) + '</p>' +
+        '<p class="text-xs text-zinc-500 mono">' + f.pageCount + ' pages · ' + L.formatBytes(f.bytes.length) + '</p>' +
+      '</div>' +
+      '<div class="flex items-center gap-1 shrink-0">' +
+        '<button data-act="up" data-id="' + id + '" class="w-8 h-8 rounded-lg border border-zinc-200 text-zinc-600 hover:border-red-400 font-bold" title="Move up" ' + (idx === 0 ? 'disabled' : '') + '>↑</button>' +
+        '<button data-act="down" data-id="' + id + '" class="w-8 h-8 rounded-lg border border-zinc-200 text-zinc-600 hover:border-red-400 font-bold" title="Move down" ' + (idx === state.order.length - 1 ? 'disabled' : '') + '>↓</button>' +
+        '<button data-act="pages" data-id="' + id + '" class="h-8 px-3 rounded-lg border border-zinc-200 text-xs font-bold text-zinc-700 hover:border-red-400" title="Preview & edit pages">Pages</button>' +
+        '<button data-act="remove" data-id="' + id + '" class="w-8 h-8 rounded-lg border border-zinc-200 text-red-600 hover:bg-red-50 font-bold" title="Remove">✕</button>' +
+      '</div>' +
+    '</div>';
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+  }
+
+  function renderAll() {
+    renderQueue();
+    renderInspector();
+    renderSplitPanel();
+    updateStats();
+  }
+
+  function renderQueue() {
+    queue.innerHTML = state.order.map(fileCardHTML).join('');
+    queueEmpty.style.display = state.order.length ? 'none' : '';
+    state.order.forEach(function (id) {
+      var f = state.files.get(id);
+      var c = queue.querySelector('canvas[data-thumb="' + id + '"]');
+      if (c) paintThumb(c, f, 1, 96);
+    });
+  }
+
+  function updateStats() {
+    var pages = 0;
+    state.order.forEach(function (id) {
+      var f = state.files.get(id);
+      pages += f.pageCount - f.excluded.size;
+    });
+    statLine.textContent = state.order.length + ' file' + (state.order.length === 1 ? '' : 's') + ' · ' + pages + ' pages';
+  }
+
+  /* ---------- inspector (per-page thumbnails) ---------- */
+  function renderInspector() {
+    var id = state.expanded;
+    if (!id || !state.files.has(id)) { inspector.classList.add('hidden'); return; }
+    var f = state.files.get(id);
+    inspector.classList.remove('hidden');
+    $('insp-name').textContent = f.name;
+    var html = '';
+    var maxPages = Math.min(f.pageCount, 120);
+    for (var p = 0; p < maxPages; p++) {
+      var rot = f.rot[p] || 0;
+      var excl = f.excluded.has(p);
+      var swap = (rot === 90 || rot === 270);
+      html += '' +
+      '<div class="bg-white border ' + (excl ? 'border-red-300' : 'border-zinc-200') + ' rounded-lg p-2 flex flex-col items-center gap-1.5">' +
+        '<div class="relative w-full flex items-center justify-center overflow-hidden rounded bg-zinc-100" style="height:120px">' +
+          '<canvas data-pthumb="' + p + '" class="page-thumb max-w-full ' + (excl ? 'excluded-thumb' : '') + '" style="' + (swap ? 'height:104px;width:auto;' : 'width:88px;height:auto;') + 'transform:rotate(' + rot + 'deg)"></canvas>' +
+          (excl ? '<span class="absolute inset-0 flex items-center justify-center"><span class="text-[10px] font-bold bg-red-600 text-white px-2 py-1 rounded">EXCLUDED</span></span>' : '') +
+        '</div>' +
+        '<span class="text-[10px] mono text-zinc-500">p.' + (p + 1) + (rot ? ' · ' + rot + '°' : '') + '</span>' +
+        '<div class="flex items-center gap-1">' +
+          '<button data-pact="rl" data-p="' + p + '" class="w-7 h-7 rounded border border-zinc-200 text-xs hover:border-red-400" title="Rotate 90° left">↺</button>' +
+          '<button data-pact="rr" data-p="' + p + '" class="w-7 h-7 rounded border border-zinc-200 text-xs hover:border-red-400" title="Rotate 90° right">↻</button>' +
+          '<button data-pact="ex" data-p="' + p + '" class="h-7 px-2 rounded border text-[10px] font-bold ' + (excl ? 'border-emerald-400 text-emerald-700' : 'border-red-300 text-red-600') + '" title="Toggle exclude">' + (excl ? 'Keep' : 'Drop') + '</button>' +
+        '</div>' +
+      '</div>';
+    }
+    if (f.pageCount > maxPages) {
+      html += '<div class="col-span-full text-xs text-zinc-500 text-center py-2">Showing first ' + maxPages + ' of ' + f.pageCount + ' pages (rotations/exclusions on later pages still apply).</div>';
+    }
+    pageGrid.innerHTML = html;
+    for (var p2 = 0; p2 < maxPages; p2++) {
+      (function (pn) {
+        var c = pageGrid.querySelector('canvas[data-pthumb="' + pn + '"]');
+        if (c) paintThumb(c, f, pn + 1, 150);
+      })(p2);
+    }
+  }
+
+  /* ---------- split panel ---------- */
+  function renderSplitPanel() {
+    var sel = $('split-source');
+    sel.innerHTML = state.order.map(function (id) {
+      var f = state.files.get(id);
+      return '<option value="' + id + '"' + (state.splitSource === id ? ' selected' : '') + '>' + escapeHtml(f.name) + ' (' + f.pageCount + ' pages)</option>';
+    }).join('') || '<option value="">— add a PDF first —</option>';
+    updateSplitPreview();
+  }
+  function updateSplitPreview() {
+    var prev = $('split-preview');
+    var f = state.splitSource ? state.files.get(state.splitSource) : null;
+    if (!f) { prev.textContent = 'Add a PDF file to begin.'; return; }
+    var raw = $('split-range').value.trim();
+    if (!raw) { prev.innerHTML = 'Formats: <span class="mono">5</span> single page · <span class="mono">1-3</span> range · <span class="mono">8-</span> from 8 to end · <span class="mono">-4</span> first 4 pages'; return; }
+    var r = L.parsePageRanges(raw, f.pageCount);
+    if (r.errors.length && r.pages.length === 0) {
+      prev.innerHTML = '<span class="text-red-600 font-semibold">' + escapeHtml(r.errors[0]) + '</span>';
+    } else {
+      prev.innerHTML = 'Selected <strong>' + r.pages.length + '</strong> page' + (r.pages.length === 1 ? '' : 's') + ': <span class="mono">' +
+        r.pages.slice(0, 12).map(function (p) { return p + 1; }).join(', ') + (r.pages.length > 12 ? '…' : '') + '</span>' +
+        (r.errors.length ? ' <span class="text-amber-600">(' + escapeHtml(r.errors[0]) + ')</span>' : '');
+    }
+  }
+
+  /* ---------- merge ---------- */
+  function countIncludedPages() {
+    var n = 0;
+    state.order.forEach(function (id) { n += state.files.get(id).pageCount - state.files.get(id).excluded.size; });
+    return n;
+  }
+  async function doMerge() {
+    hideErr(); $('result').classList.add('hidden'); $('progress-wrap').dataset.keep = '';
+    if (state.busy) return;
+    if (state.order.length === 0) { showErr('Add at least one PDF file before merging.'); return; }
+    var total = countIncludedPages();
+    if (total === 0) { showErr('Every page is excluded. Keep at least one page to build a document.'); return; }
+    setBusy(true, 'Merging ' + total + ' pages…'); setProgress(0, total);
+    try {
+      var out = await PDFLib.PDFDocument.create();
+      var done = 0;
+      for (var oi = 0; oi < state.order.length; oi++) {
+        var f = state.files.get(state.order[oi]);
+        for (var p = 0; p < f.pageCount; p++) {
+          if (f.excluded.has(p)) continue;
+          var cp = (await out.copyPages(f.doc, [p]))[0];
+          cp.setRotation(PDFLib.degrees(L.combineRotations(f.doc.getPage(p).getRotation().angle, f.rot[p] || 0)));
+          out.addPage(cp);
+          done++; setProgress(done, total);
+          if (done % 20 === 0) await new Promise(function (r) { setTimeout(r, 0); });
+        }
+      }
+      $('progress-label').textContent = 'Saving…';
+      var bytes = await out.save();
+      try { localStorage.setItem('docbind-last-name', outName.value.trim()); } catch (e) {}
+      offerDownload(bytes, L.makeOutputName(outName.value, 'merge'));
+    } catch (e) {
+      showErr('Merging failed: ' + (e && e.message ? e.message : e));
+    }
+    setBusy(false);
+  }
+
+  /* ---------- split / extract ---------- */
+  async function buildFromPages(f, pages, label) {
+    var out = await PDFLib.PDFDocument.create();
+    for (var i = 0; i < pages.length; i++) {
+      var p = pages[i];
+      var cp = (await out.copyPages(f.doc, [p]))[0];
+      cp.setRotation(PDFLib.degrees(L.combineRotations(f.doc.getPage(p).getRotation().angle, f.rot[p] || 0)));
+      out.addPage(cp);
+    }
+    return await out.save();
+  }
+  async function doExtract() {
+    hideErr(); $('result').classList.add('hidden');
+    var f = state.splitSource ? state.files.get(state.splitSource) : null;
+    if (!f) { showErr('Add a PDF file first, then choose it as the source.'); return; }
+    var r = L.parsePageRanges($('split-range').value, f.pageCount);
+    if (r.errors.length) { showErr(r.errors.join('<br>')); return; }
+    if (r.pages.length === 0) { showErr('No pages selected. Try a range like 1-3, 5, 8-.'); return; }
+    setBusy(true, 'Extracting ' + r.pages.length + ' pages…'); setProgress(0, r.pages.length);
+    try {
+      var bytes = await buildFromPages(f, r.pages);
+      offerDownload(bytes, L.makeOutputName(baseName(f.name) + '-extract', 'extract'));
+      setProgress(r.pages.length, r.pages.length);
+    } catch (e) { showErr('Extraction failed: ' + (e && e.message ? e.message : e)); }
+    setBusy(false);
+  }
+  async function doSplitEvery() {
+    hideErr(); $('result').classList.add('hidden');
+    var f = state.splitSource ? state.files.get(state.splitSource) : null;
+    if (!f) { showErr('Add a PDF file first, then choose it as the source.'); return; }
+    var n = parseInt($('split-every').value, 10);
+    if (!n || n < 1) { showErr('Enter how many pages each split file should contain (1 or more).'); return; }
+    var chunks = [];
+    var included = [];
+    for (var p = 0; p < f.pageCount; p++) { if (!f.excluded.has(p)) included.push(p); }
+    if (included.length === 0) { showErr('Every page is excluded. Keep at least one page to split.'); return; }
+    for (var i = 0; i < included.length; i += n) chunks.push(included.slice(i, i + n));
+    if (chunks.length > 50) { showErr('That would create ' + chunks.length + ' files — capped at 50. Use a larger page count per file.'); return; }
+    setBusy(true, 'Splitting into ' + chunks.length + ' files…');
+    try {
+      for (var c = 0; c < chunks.length; c++) {
+        setProgress(c, chunks.length);
+        var bytes = await buildFromPages(f, chunks[c]);
+        var blob = new Blob([bytes], { type: 'application/pdf' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = L.makeOutputName(baseName(f.name) + '-part-' + (c + 1), 'split');
+        document.body.appendChild(a); a.click(); a.remove();
+        (function (u) { setTimeout(function () { URL.revokeObjectURL(u); }, 30000); })(url);
+        await new Promise(function (r) { setTimeout(r, 350); });
+      }
+      setProgress(chunks.length, chunks.length); $('progress-label').textContent = 'Complete';
+      $('result-meta').textContent = chunks.length + ' files downloaded · ' + included.length + ' pages total';
+      $('result').classList.remove('hidden');
+      $('result-link').style.display = 'none';
+    } catch (e) { showErr('Splitting failed: ' + (e && e.message ? e.message : e)); }
+    setBusy(false);
+  }
+
+  /* ---------- events ---------- */
+  function setMode(m) {
+    state.mode = m;
+    var isMerge = m === 'merge';
+    $('tab-merge').className = 'px-4 sm:px-6 py-2.5 text-sm font-semibold ' + (isMerge ? 'bg-brand-red text-white' : 'text-zinc-300 hover:text-white');
+    $('tab-split').className = 'px-4 sm:px-6 py-2.5 text-sm font-semibold ' + (!isMerge ? 'bg-brand-red text-white' : 'text-zinc-300 hover:text-white');
+    $('tab-merge').setAttribute('aria-selected', isMerge);
+    $('tab-split').setAttribute('aria-selected', !isMerge);
+    splitPanel.classList.toggle('hidden', isMerge);
+    $('btn-merge').parentElement.style.display = isMerge ? '' : 'none';
+    outName.value = isMerge ? (localStorage.getItem('docbind-last-name') || 'docbind-merged.pdf') : baseName((state.splitSource && state.files.get(state.splitSource).name) || 'docbind') + '-extract.pdf';
+    renderQueue();
+  }
+
+  dropzone.addEventListener('click', function () { fileInput.click(); });
+  dropzone.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+  fileInput.addEventListener('change', function () { addFiles(fileInput.files); fileInput.value = ''; });
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    dropzone.addEventListener(ev, function (e) { e.preventDefault(); dropzone.classList.add('drop-active'); });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    dropzone.addEventListener(ev, function (e) { e.preventDefault(); dropzone.classList.remove('drop-active'); });
+  });
+  dropzone.addEventListener('drop', function (e) { if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+
+  // queue: buttons + html5 drag reorder
+  queue.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-act]');
+    if (!btn) {
+      var card = e.target.closest('.file-card');
+      if (card && state.mode === 'split') { state.splitSource = card.dataset.id; renderQueue(); renderSplitPanel(); }
+      return;
+    }
+    var id = btn.dataset.id, act = btn.dataset.act;
+    var idx = state.order.indexOf(id);
+    if (act === 'up' || act === 'down') {
+      var to = act === 'up' ? idx - 1 : idx + 1;
+      state.order = L.moveItem(state.order, idx, to);
+      renderQueue(); updateStats();
+    } else if (act === 'remove') {
+      state.files.delete(id); pdfjsCache.delete(id);
+      state.order = state.order.filter(function (x) { return x !== id; });
+      if (state.expanded === id) state.expanded = null;
+      if (state.splitSource === id) state.splitSource = state.order[0] || null;
+      renderAll();
+    } else if (act === 'pages') {
+      state.expanded = (state.expanded === id) ? null : id;
+      renderInspector();
+    }
+  });
+  queue.addEventListener('dragstart', function (e) {
+    var card = e.target.closest('.file-card');
+    if (!card) return;
+    dragId = card.dataset.id;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  queue.addEventListener('dragend', function () {
+    dragId = null;
+    queue.querySelectorAll('.file-card').forEach(function (c) { c.classList.remove('dragging'); });
+  });
+  queue.addEventListener('dragover', function (e) {
+    e.preventDefault();
+    var after = Array.prototype.find.call(queue.querySelectorAll('.file-card:not(.dragging)'), function (card) {
+      var r = card.getBoundingClientRect();
+      return e.clientY < r.top + r.height / 2;
+    });
+    var dragging = queue.querySelector('.dragging');
+    if (dragging) queue.insertBefore(dragging, after || null);
+  });
+  queue.addEventListener('drop', function (e) {
+    e.preventDefault();
+    var ids = Array.prototype.map.call(queue.querySelectorAll('.file-card'), function (c) { return c.dataset.id; });
+    state.order = ids.filter(function (id) { return state.files.has(id); });
+    renderQueue(); updateStats();
+  });
+
+  // inspector actions
+  inspector.addEventListener('click', function (e) {
+    var id = state.expanded; if (!id) return;
+    var f = state.files.get(id); if (!f) return;
+    var b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.pact) {
+      var p = parseInt(b.dataset.p, 10), act = b.dataset.pact;
+      if (act === 'rl') f.rot[p] = L.addRotation(f.rot[p] || 0, -90);
+      else if (act === 'rr') f.rot[p] = L.addRotation(f.rot[p] || 0, 90);
+      else if (act === 'ex') { if (f.excluded.has(p)) f.excluded.delete(p); else f.excluded.add(p); }
+      renderInspector(); updateStats();
+    } else if (b.id === 'btn-rotall-l' || b.id === 'btn-rotall-r') {
+      var d = b.id === 'btn-rotall-l' ? -90 : 90;
+      for (var p = 0; p < f.pageCount; p++) f.rot[p] = L.addRotation(f.rot[p] || 0, d);
+      renderInspector();
+    } else if (b.id === 'btn-rot-reset') {
+      f.rot = {}; renderInspector();
+    } else if (b.id === 'btn-insp-close') {
+      state.expanded = null; renderInspector();
+    }
+  });
+
+  $('tab-merge').addEventListener('click', function () { setMode('merge'); });
+  $('tab-split').addEventListener('click', function () { setMode('split'); });
+  $('btn-clear').addEventListener('click', function () {
+    state.files.clear(); state.order = []; state.expanded = null; state.splitSource = null;
+    pdfjsCache.clear(); hideErr(); $('result').classList.add('hidden');
+    $('result-link').style.display = '';
+    renderAll();
+  });
+  $('btn-merge').addEventListener('click', doMerge);
+  $('btn-extract').addEventListener('click', doExtract);
+  $('btn-split-every').addEventListener('click', doSplitEvery);
+  $('split-source').addEventListener('change', function () { state.splitSource = this.value || null; renderQueue(); updateSplitPreview(); });
+  $('split-range').addEventListener('input', updateSplitPreview);
+
+  // restore last output name
+  try {
+    var last = localStorage.getItem('docbind-last-name');
+    if (last) outName.value = last;
+  } catch (e) {}
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
